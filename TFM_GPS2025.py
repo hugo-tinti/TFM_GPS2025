@@ -1,3 +1,5 @@
+from groq import Groq
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -75,7 +77,12 @@ import logging
 # ══════════════════════════════════════════════════════════════════════
 # CONFIGURACIÓN IA CON GROQ + LLAMA 3
 # ══════════════════════════════════════════════════════════════════════
-GROQ_API_KEY = "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"
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # Carga variables desde .env (si existe)
+
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 GROQ_URL  = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
@@ -9819,17 +9826,33 @@ logger.info("=" * 80)
     Input('sidebar-toggle', 'n_clicks'), State('sidebar-state', 'data')
 )
 def toggle_sidebar(n_clicks, state):
-    if n_clicks == 0:
-        return 'sidebar', 'main-content', 'sidebar-toggle', 'fas fa-angles-left', {'collapsed': False}
-    collapsed = not state.get('collapsed', False)
-    if collapsed:
-        return 'sidebar collapsed', 'main-content expanded', 'sidebar-toggle collapsed', 'fas fa-angles-right', {'collapsed': True}
-    else:
-        return 'sidebar', 'main-content', 'sidebar-toggle', 'fas fa-angles-left', {'collapsed': False}
+    """
+    Toggle seguro del sidebar, compatible con Render aunque sidebar-state arranque en None.
+    """
+    if state is None:
+        state = {'collapsed': False}
 
-# ============================================================================
-# MEJORA DASH 3.4.0 (ENERO 2026): CALLBACK OCULTO
-# ============================================================================
+    if not n_clicks or n_clicks == 0:
+        collapsed = state.get('collapsed', False)
+    else:
+        collapsed = not state.get('collapsed', False)
+
+    if collapsed:
+        return (
+            'sidebar collapsed',
+            'main-content expanded',
+            'sidebar-toggle collapsed',
+            'fas fa-angles-right',
+            {'collapsed': True},
+        )
+    else:
+        return (
+            'sidebar',
+            'main-content',
+            'sidebar-toggle',
+            'fas fa-angles-left',
+            {'collapsed': False},
+        )
 @app.callback([Output('store-gps', 'data'), Output('status-gps', 'children'), Output('upload-gps', 'className')],
               Input('upload-gps', 'contents'), State('upload-gps', 'filename'),
               hidden=True)  # ✅ NUEVO 2026 - Oculta este callback del devtools
@@ -22101,6 +22124,11 @@ logger.info("")
 # ==============================================================================
 # FIN DEL SISTEMA DASH PATCH
 # ==============================================================================
+
+
+
+
+
 
 
 
