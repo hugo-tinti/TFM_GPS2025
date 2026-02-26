@@ -3181,7 +3181,7 @@ def initialize_resources():
 
         # 1. Validar y cargar configuración
         logger.info("   ✓ Validando configuración del sistema...")
-        if 'config_manager' in globals(): config_manager.load_config()
+        config_manager.load_config()
 
         # 2. Verificar esquemas de validación
         logger.info("   ✓ Verificando esquemas de validación de datos...")
@@ -3192,8 +3192,8 @@ def initialize_resources():
 
         # 3. Inicializar historial de sesión
         logger.info("   ✓ Inicializando historial de sesión...")
-        if 'config_manager' in globals(): config_manager.history = []
-        if 'config_manager' in globals(): config_manager.add_to_history("app_start", {
+        config_manager.history = []
+        config_manager.add_to_history("app_start", {
             "version": "4.3.7",
             "timestamp": datetime.now().isoformat(),
             "environment": "production"
@@ -3667,7 +3667,7 @@ else:
 # def actualizar_grafica_distancia(jugador, tema):
 #     fig = go.Figure(...)
 #     fig = agregar_logo_afa(fig)
-#    fig = aplicar_tooltips_automaticos(fig)  # Tu código actual (comentado para evitar NameError global)
+    fig = aplicar_tooltips_automaticos(fig)  # Tu código actual
 #     fig = aplicar_tema_plotly(fig, tema if tema else 'light')  # <-- Aplicar tema
 #     return fig
 # ============================================================================
@@ -9824,17 +9824,33 @@ logger.info("=" * 80)
     Input('sidebar-toggle', 'n_clicks'), State('sidebar-state', 'data')
 )
 def toggle_sidebar(n_clicks, state):
-    if n_clicks == 0:
-        return 'sidebar', 'main-content', 'sidebar-toggle', 'fas fa-angles-left', {'collapsed': False}
-    collapsed = not state.get('collapsed', False)
-    if collapsed:
-        return 'sidebar collapsed', 'main-content expanded', 'sidebar-toggle collapsed', 'fas fa-angles-right', {'collapsed': True}
-    else:
-        return 'sidebar', 'main-content', 'sidebar-toggle', 'fas fa-angles-left', {'collapsed': False}
+    """
+    Toggle seguro del sidebar, compatible con Render aunque sidebar-state arranque en None.
+    """
+    if state is None:
+        state = {'collapsed': False}
 
-# ============================================================================
-# MEJORA DASH 3.4.0 (ENERO 2026): CALLBACK OCULTO
-# ============================================================================
+    if not n_clicks or n_clicks == 0:
+        collapsed = state.get('collapsed', False)
+    else:
+        collapsed = not state.get('collapsed', False)
+
+    if collapsed:
+        return (
+            'sidebar collapsed',
+            'main-content expanded',
+            'sidebar-toggle collapsed',
+            'fas fa-angles-right',
+            {'collapsed': True},
+        )
+    else:
+        return (
+            'sidebar',
+            'main-content',
+            'sidebar-toggle',
+            'fas fa-angles-left',
+            {'collapsed': False},
+        )
 @app.callback([Output('store-gps', 'data'), Output('status-gps', 'children'), Output('upload-gps', 'className')],
               Input('upload-gps', 'contents'), State('upload-gps', 'filename'),
               hidden=True)  # ✅ NUEVO 2026 - Oculta este callback del devtools
