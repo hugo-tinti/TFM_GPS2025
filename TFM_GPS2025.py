@@ -3878,8 +3878,8 @@ except Exception as e:
 
 def agregar_logo_T4(fig, position='top-right', size=0.13):
     """
-    Agrega el logo T4.jpg (PF TNT - verde) en la esquina superior derecha de cada gráfica.
-    Busca el logo en assets/T4.jpg
+    Agrega el logo  (PF TNT - verde) en la esquina superior derecha de cada gráfica.
+    Busca el logo en assets/
     """
 # [LIMPIEZA] import duplicado eliminado:     import os
 # [LIMPIEZA] import duplicado eliminado:     import base64
@@ -3896,7 +3896,7 @@ def agregar_logo_T4(fig, position='top-right', size=0.13):
     ]
 
     for search_dir in search_dirs:
-        logo_path = os.path.join(search_dir, 'T4.jpg')
+        logo_path = os.path.join(search_dir, '')
         logo_path = os.path.normpath(logo_path)
 
         if os.path.exists(logo_path):
@@ -8652,7 +8652,7 @@ a, button, .btn-update, .sidebar-toggle {
     from { opacity: 0; transform: translateY(48px) scale(0.97); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
-#portada-logo-img {
+# {
     animation: logoPulse 3s ease-in-out infinite;
 }
 @keyframes logoPulse {
@@ -8981,11 +8981,11 @@ app.layout = html.Div(id='main-container', style={'backgroundColor': '#FFFFFF', 
                 # ── Logo T4 con fallback automático ─────────────────────
                 html.Div([
                     html.Img(
-                        id='portada-logo-img',
-                        # Intenta T4.jpg → t4.jpg → t4.png en ese orden
-                        src='/assets/T4.jpg',
+                        id='',
+                        # Intenta  →  →  en ese orden
+                        src='/assets/',
                         **{
-                            'data-fallbacks': '/assets/t4.jpg,/assets/T4.png,/assets/t4.png',
+                            'data-fallbacks': '/assets/,/assets/,/assets/',
                         },
                         style={
                             'maxWidth': '420px',
@@ -9011,7 +9011,7 @@ app.layout = html.Div(id='main-container', style={'backgroundColor': '#FFFFFF', 
                                 img.src = list[0];
                             }
                             document.addEventListener('DOMContentLoaded', function() {
-                                var img = document.getElementById('portada-logo-img');
+                                var img = document.getElementById('');
                                 if (img) {
                                     img.onerror = function() { tryNextSrc(this); };
                                     // Forzar re-check si ya falló
@@ -9264,7 +9264,7 @@ app.layout = html.Div(id='main-container', style={'backgroundColor': '#FFFFFF', 
         html.Div([
             html.H1([html.I(className="fas fa-chart-line", style={'marginRight': '16px'}), "SISTEMA GPS PROFESIONAL"], className='header-title'),
             html.Img(
-                src='assets/T4.jpg',
+                src='assets/',
                 style={
                     'height': '200px',
                     'width': '600px',
