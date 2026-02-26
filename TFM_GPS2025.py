@@ -17582,10 +17582,7 @@ def update_v15_posiciones(puesto_data):
      State('v16-periodo', 'value'),
      State('v16-variables', 'value')]
 )
-def update_v16(gps_data, *args, **kwargs):
-    if not gps_data:
-        return html.Div('Carga datos GPS para ver la visualización 16.', style={'padding': 40, 'textAlign': 'center', 'color': '#64748B'})
-n, data, puesto_data, posicion, periodo, tipo_vars):
+def update_v16(n, data, puesto_data, posicion, periodo, tipo_vars):
     if not data:
         return html.Div("⚠️ No hay datos disponibles",
                        style={'textAlign': 'center', 'padding': '60px', 'color': '#F59E0B'})
