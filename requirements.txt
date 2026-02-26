@@ -34,6 +34,14 @@ fpdf>=1.7.2
 requests>=2.32.0
 python-dotenv>=1.0.0
 
+# Callbacks en segundo plano (opcional)
+diskcache>=5.6.3
+
+# Optimización de gráficos grandes (opcional)
+datashader>=0.16.0
+colorcet>=3.0.1
+
+
 # ============================================================================
 # NOTAS:
 # - flask-caching mejora performance pero es opcional (hay fallback)
