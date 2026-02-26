@@ -81,10 +81,7 @@ from dotenv import load_dotenv
 load_dotenv()  # Carga variables desde .env (si existe)
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-GROQ_URL  = "https://api.groq.com/openai/v1/chat/completions"git add .
-git commit -m "fix: reemplazar API Key por variable de entorno"
-git push origin main --force
-
+GROQ_URL  = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
 def analizar_con_groq(prompt: str, max_tokens: int = 2000) -> str:
