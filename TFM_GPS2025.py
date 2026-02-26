@@ -3181,7 +3181,7 @@ def initialize_resources():
 
         # 1. Validar y cargar configuración
         logger.info("   ✓ Validando configuración del sistema...")
-        config_manager.load_config()
+        if 'config_manager' in globals(): config_manager.load_config()
 
         # 2. Verificar esquemas de validación
         logger.info("   ✓ Verificando esquemas de validación de datos...")
@@ -3192,8 +3192,8 @@ def initialize_resources():
 
         # 3. Inicializar historial de sesión
         logger.info("   ✓ Inicializando historial de sesión...")
-        config_manager.history = []
-        config_manager.add_to_history("app_start", {
+        if 'config_manager' in globals(): config_manager.history = []
+        if 'config_manager' in globals(): config_manager.add_to_history("app_start", {
             "version": "4.3.7",
             "timestamp": datetime.now().isoformat(),
             "environment": "production"
@@ -3667,7 +3667,7 @@ else:
 # def actualizar_grafica_distancia(jugador, tema):
 #     fig = go.Figure(...)
 #     fig = agregar_logo_afa(fig)
-    fig = aplicar_tooltips_automaticos(fig)  # Tu código actual
+#    fig = aplicar_tooltips_automaticos(fig)  # Tu código actual (comentado para evitar NameError global)
 #     fig = aplicar_tema_plotly(fig, tema if tema else 'light')  # <-- Aplicar tema
 #     return fig
 # ============================================================================
@@ -3878,8 +3878,8 @@ except Exception as e:
 
 def agregar_logo_T4(fig, position='top-right', size=0.13):
     """
-    Agrega el logo  (PF TNT - verde) en la esquina superior derecha de cada gráfica.
-    Busca el logo en assets/
+    Agrega el logo T4.jpg (PF TNT - verde) en la esquina superior derecha de cada gráfica.
+    Busca el logo en assets/T4.jpg
     """
 # [LIMPIEZA] import duplicado eliminado:     import os
 # [LIMPIEZA] import duplicado eliminado:     import base64
@@ -3896,7 +3896,7 @@ def agregar_logo_T4(fig, position='top-right', size=0.13):
     ]
 
     for search_dir in search_dirs:
-        logo_path = os.path.join(search_dir, '')
+        logo_path = os.path.join(search_dir, 'T4.jpg')
         logo_path = os.path.normpath(logo_path)
 
         if os.path.exists(logo_path):
@@ -8652,7 +8652,7 @@ a, button, .btn-update, .sidebar-toggle {
     from { opacity: 0; transform: translateY(48px) scale(0.97); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
-# {
+#portada-logo-img {
     animation: logoPulse 3s ease-in-out infinite;
 }
 @keyframes logoPulse {
@@ -8981,11 +8981,11 @@ app.layout = html.Div(id='main-container', style={'backgroundColor': '#FFFFFF', 
                 # ── Logo T4 con fallback automático ─────────────────────
                 html.Div([
                     html.Img(
-                        id='',
-                        # Intenta  →  →  en ese orden
-                        src='/assets/',
+                        id='portada-logo-img',
+                        # Intenta T4.jpg → t4.jpg → t4.png en ese orden
+                        src='/assets/T4.jpg',
                         **{
-                            'data-fallbacks': '/assets/,/assets/,/assets/',
+                            'data-fallbacks': '/assets/t4.jpg,/assets/T4.png,/assets/t4.png',
                         },
                         style={
                             'maxWidth': '420px',
@@ -9011,7 +9011,7 @@ app.layout = html.Div(id='main-container', style={'backgroundColor': '#FFFFFF', 
                                 img.src = list[0];
                             }
                             document.addEventListener('DOMContentLoaded', function() {
-                                var img = document.getElementById('');
+                                var img = document.getElementById('portada-logo-img');
                                 if (img) {
                                     img.onerror = function() { tryNextSrc(this); };
                                     // Forzar re-check si ya falló
@@ -9264,7 +9264,7 @@ app.layout = html.Div(id='main-container', style={'backgroundColor': '#FFFFFF', 
         html.Div([
             html.H1([html.I(className="fas fa-chart-line", style={'marginRight': '16px'}), "SISTEMA GPS PROFESIONAL"], className='header-title'),
             html.Img(
-                src='assets/',
+                src='assets/T4.jpg',
                 style={
                     'height': '200px',
                     'width': '600px',
