@@ -275,3 +275,5 @@ tfmgpspro.log
 # Assets generados / temporales
 assets/cache/
 .env
+
+cache_background/
