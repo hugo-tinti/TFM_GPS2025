@@ -21755,7 +21755,9 @@ def descargar_informe_v23(n_clicks, gpsdata, atleta, variable, va, vc):
     except Exception as e:
         logger.error(f"Error informe: {e}"); return dash.no_update
 
-app.run(debug=True, host='0.0.0.0', port=8050)
+if __name__ == '__main__':
+    app.run(debug=False, host='0.0.0.0', port=8050)
+
 
 # ==============================================================================
 # 🚀 SISTEMA AVANZADO CON DASH PATCH (FEBRERO 2026)
