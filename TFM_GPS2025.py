@@ -1,10 +1,3 @@
-import os
-from groq import Groq
-
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-
-client = Groq(api_key=GROQ_API_KEY)
-
 from groq import Groq
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 #!/usr/bin/env python3
@@ -5967,6 +5960,10 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
         # Reconstruir DataFrame GPS
         df_gps = pd.DataFrame(gps_data)
         df_gps['Fecha'] = pd.to_datetime(df_gps['Fecha'])
+        # RENDER: limitar registros para evitar timeout/502
+        MAX_REGISTROS_RENDER = 3000
+        if len(df_gps) > MAX_REGISTROS_RENDER:
+            df_gps = df_gps.sort_values('Fecha').tail(MAX_REGISTROS_RENDER).reset_index(drop=True)
 
         # ===================================================================
         # CORRECCION 1: MERGE CON POSICIONES
@@ -7063,6 +7060,10 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
         # Reconstruir DataFrame
         df_gps = pd.DataFrame(gps_data)
         df_gps['Fecha'] = pd.to_datetime(df_gps['Fecha'])
+        # RENDER: limitar registros para evitar timeout/502
+        MAX_REGISTROS_RENDER = 3000
+        if len(df_gps) > MAX_REGISTROS_RENDER:
+            df_gps = df_gps.sort_values('Fecha').tail(MAX_REGISTROS_RENDER).reset_index(drop=True)
 
         df_partidos = None
         if partidos_data:
@@ -12769,6 +12770,10 @@ def update_v22(n, gps_data, pos_data, fecha_inicio, fecha_fin, posicion, umbral)
     try:
         df_gps = pd.DataFrame(gps_data)
         df_gps['Fecha'] = pd.to_datetime(df_gps['Fecha'])
+        # RENDER: limitar registros para evitar timeout/502
+        MAX_REGISTROS_RENDER = 3000
+        if len(df_gps) > MAX_REGISTROS_RENDER:
+            df_gps = df_gps.sort_values('Fecha').tail(MAX_REGISTROS_RENDER).reset_index(drop=True)
 
         if pos_data:
             df_pos = pd.DataFrame(pos_data)
@@ -20170,6 +20175,10 @@ def update_v23_fwf(n, gps_data, atleta, variable, fi, ff, va, vc):
         df = pd.DataFrame(gps_data)
         df["Fecha"] = pd.to_datetime(df["Fecha"], errors="coerce")
         df = df.sort_values("Fecha")
+        # RENDER: limitar registros para evitar timeout/502
+        MAX_REGISTROS_RENDER = 3000
+        if len(df) > MAX_REGISTROS_RENDER:
+            df = df.tail(MAX_REGISTROS_RENDER).reset_index(drop=True)
 
         if fi and ff:
             df = df[(df["Fecha"] >= pd.to_datetime(fi)) & (df["Fecha"] <= pd.to_datetime(ff))]
@@ -21758,7 +21767,6 @@ def descargar_informe_v23(n_clicks, gpsdata, atleta, variable, va, vc):
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=8050)
 
-
 # ==============================================================================
 # 🚀 SISTEMA AVANZADO CON DASH PATCH (FEBRERO 2026)
 # ==============================================================================
@@ -22133,11 +22141,6 @@ logger.info("")
 # ==============================================================================
 # FIN DEL SISTEMA DASH PATCH
 # ==============================================================================
-
-
-
-
-
 
 
 
