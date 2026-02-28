@@ -75,6 +75,24 @@ import dash
 # ============================================================================
 import logging
 
+# ============================================================================
+# INICIALIZACIÓN DE KALEIDO PARA EXPORTACIÓN DE IMÁGENES
+# ============================================================================
+KALEIDO_DISPONIBLE = False
+try:
+    import plotly.io as pio
+    # Forzar inicialización de kaleido
+    pio.kaleido.scope.default_format = "png"
+    pio.kaleido.scope.default_width = 1920
+    pio.kaleido.scope.default_height = 1080
+    pio.kaleido.scope.default_scale = 2
+    KALEIDO_DISPONIBLE = True
+    print("✅ Kaleido inicializado correctamente para exportación de imágenes")
+except Exception as e:
+    print(f"⚠️ Kaleido no disponible: {e}")
+    print("   Instala con: pip install kaleido")
+# ============================================================================
+
 # ══════════════════════════════════════════════════════════════════════
 # CONFIGURACIÓN IA CON GROQ + LLAMA 3
 # ══════════════════════════════════════════════════════════════════════
@@ -3029,76 +3047,15 @@ logger.info("=" * 80)
 # CONFIG EXPORT PNG - V15.0
 
 # ============================================================================
-# SISTEMA DE EXPORTACIÓN PROFESIONAL - AGREGADO PARA EXPORTAR REPORTES
+# SISTEMA DE EXPORTACIÓN PROFESIONAL - DEFINIDO MÁS ADELANTE
+# ============================================================================
+# La clase SistemaExportacion está definida en la línea 3254
+# [LIMPIEZA] Definición duplicada eliminada
 # ============================================================================
 
 # [LIMPIEZA] import duplicado eliminado: import io
 # [LIMPIEZA] import duplicado eliminado: import base64
 from datetime import datetime as dt
-
-class SistemaExportacion:
-    """
-    Sistema para exportar visualizaciones en diferentes formatos.
-    """
-
-    @staticmethod
-    def exportar_plotly_png(fig, nombre_archivo="grafico"):
-        """
-        Exporta una figura de Plotly a PNG.
-
-        Args:
-            fig: Figura de Plotly
-            nombre_archivo: Nombre del archivo (sin extensión)
-
-        Returns:
-            Bytes del PNG generado
-        """
-        try:
-            img_bytes = fig.to_image(format="png", width=1920, height=1080, scale=2)
-            return img_bytes
-        except Exception as e:
-            logger.error(f"Error al exportar PNG: {e}")
-            return None
-
-    @staticmethod
-    def crear_boton_descarga(data, filename, label="📥 Descargar"):
-        """
-        Crea un botón de descarga para Dash.
-
-        Args:
-            data: Bytes del archivo a descargar
-            filename: Nombre del archivo
-            label: Texto del botón
-
-        Returns:
-            Componente html.A de Dash
-        """
-        if data is None:
-            return html.Div("❌ Error al generar archivo", style={'color': '#EF4444'})
-
-        b64 = base64.b64encode(data).decode()
-        href = f"data:application/octet-stream;base64,{b64}"
-
-        return html.A(
-            label,
-            href=href,
-            download=filename,
-            style={
-                'backgroundColor': '#2563EB',
-                'color': 'white',
-                'padding': '12px 24px',
-                'borderRadius': '8px',
-                'textDecoration': 'none',
-                'display': 'inline-block',
-                'fontSize': '15px',
-                'fontWeight': 'bold',
-                'cursor': 'pointer',
-                'border': 'none',
-                'transition': 'all 0.3s',
-                'boxShadow': '0 4px 6px rgba(0,0,0,0.1)',
-                'marginRight': '10px'
-            }
-        )
 
 # ============================================================================
 
@@ -3223,6 +3180,69 @@ def initialize_resources():
 
 # Ejecutar inicialización al cargar el módulo
 initialize_resources()
+
+# ============================================================================
+# DIAGNÓSTICO DE SISTEMA DE EXPORTACIÓN
+# ============================================================================
+def diagnosticar_exportacion():
+    """Diagnostica el sistema de exportación de imágenes"""
+    logger.info("=" * 80)
+    logger.info("🔍 DIAGNÓSTICO DE SISTEMA DE EXPORTACIÓN")
+    logger.info("=" * 80)
+    
+    # 1. Verificar kaleido
+    if KALEIDO_DISPONIBLE:
+        logger.info("✅ Kaleido: DISPONIBLE")
+        try:
+            import plotly.io as pio
+            logger.info(f"   • Formato por defecto: {pio.kaleido.scope.default_format}")
+            logger.info(f"   • Dimensiones: {pio.kaleido.scope.default_width}x{pio.kaleido.scope.default_height}")
+            logger.info(f"   • Escala: {pio.kaleido.scope.default_scale}x")
+        except Exception as e:
+            logger.warning(f"   ⚠️ No se pudo acceder a configuración: {e}")
+    else:
+        logger.error("❌ Kaleido: NO DISPONIBLE")
+        logger.error("   Instala con: pip install kaleido")
+        logger.error("   En Render: agrega 'kaleido' a requirements.txt")
+    
+    # 2. Verificar pandas
+    try:
+        import pandas as pd
+        logger.info(f"✅ Pandas: {pd.__version__}")
+    except ImportError:
+        logger.error("❌ Pandas: NO DISPONIBLE")
+    
+    # 3. Verificar plotly
+    try:
+        import plotly
+        logger.info(f"✅ Plotly: {plotly.__version__}")
+    except ImportError:
+        logger.error("❌ Plotly: NO DISPONIBLE")
+    
+    # 4. Test de exportación
+    logger.info("")
+    logger.info("🧪 Test de exportación simple...")
+    if KALEIDO_DISPONIBLE:
+        try:
+            import plotly.graph_objects as go
+            test_fig = go.Figure(data=[go.Scatter(x=[1, 2, 3], y=[1, 2, 3])])
+            test_bytes = test_fig.to_image(format="png", width=100, height=100)
+            if test_bytes:
+                logger.info("✅ Test de exportación: EXITOSO")
+            else:
+                logger.error("❌ Test de exportación: FALLÓ (bytes vacíos)")
+        except Exception as e:
+            logger.error(f"❌ Test de exportación: FALLÓ")
+            logger.error(f"   Error: {str(e)[:200]}")
+    else:
+        logger.warning("⚠️ Test de exportación: OMITIDO (kaleido no disponible)")
+    
+    logger.info("=" * 80)
+    logger.info("")
+
+# Ejecutar diagnóstico
+diagnosticar_exportacion()
+
 # Mensaje de confirmación
 logger.info("=" * 80)
 logger.info("✅ SISTEMA DE HOOKS AVANZADO ACTIVADO")
@@ -3271,10 +3291,70 @@ class SistemaExportacion:
             Bytes del PNG generado (1920x1080, scale 2)
         """
         try:
-            img_bytes = fig.to_image(format="png", width=1920, height=1080, scale=2)
-            return img_bytes
+            # Verificar si kaleido está disponible
+            if not KALEIDO_DISPONIBLE:
+                logger.error("❌ Kaleido no está disponible. No se puede exportar PNG.")
+                logger.error("   Instala con: pip install kaleido")
+                return None
+            
+            # Importar plotly.io cada vez para asegurar que está actualizado
+            import plotly.io as pio
+            
+            # Intentar exportar con kaleido
+            try:
+                # Método 1: Usar to_image directamente
+                img_bytes = fig.to_image(
+                    format="png", 
+                    width=1920, 
+                    height=1080, 
+                    scale=2,
+                    engine="kaleido"
+                )
+                logger.info(f"✅ Imagen exportada correctamente: {nombre_archivo}")
+                return img_bytes
+                
+            except Exception as e1:
+                logger.warning(f"⚠️ Método 1 (to_image) falló: {e1}")
+                
+                # Método 2: Usar write_image y luego leer
+                try:
+                    import io
+                    import tempfile
+                    
+                    # Crear archivo temporal
+                    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
+                        tmp_path = tmp.name
+                    
+                    # Escribir imagen al archivo temporal
+                    pio.write_image(
+                        fig, 
+                        tmp_path,
+                        format="png",
+                        width=1920,
+                        height=1080,
+                        scale=2,
+                        engine="kaleido"
+                    )
+                    
+                    # Leer bytes del archivo
+                    with open(tmp_path, 'rb') as f:
+                        img_bytes = f.read()
+                    
+                    # Eliminar archivo temporal
+                    import os
+                    os.unlink(tmp_path)
+                    
+                    logger.info(f"✅ Imagen exportada correctamente (método 2): {nombre_archivo}")
+                    return img_bytes
+                    
+                except Exception as e2:
+                    logger.error(f"❌ Método 2 (write_image) también falló: {e2}")
+                    return None
+                    
         except Exception as e:
-            logger.error(f"❌ Error al exportar PNG: {e}")
+            logger.error(f"❌ Error crítico al exportar PNG: {e}")
+            logger.error(f"   Verifica que kaleido esté instalado correctamente")
+            logger.error(f"   En Render, asegúrate de tener 'kaleido' en requirements.txt")
             return None
 
     @staticmethod
@@ -19108,6 +19188,52 @@ def exportar_visualizaciones_global(n_clicks, dashboard_content):
     """
     if n_clicks == 0:
         return ""
+    
+    # Verificar disponibilidad de kaleido al principio
+    if not KALEIDO_DISPONIBLE:
+        return html.Div([
+            html.I(className="fas fa-exclamation-triangle", style={
+                'fontSize': '48px',
+                'color': '#EF4444',
+                'marginBottom': '15px'
+            }),
+            html.H4("❌ Kaleido no está disponible", style={
+                'color': '#991B1B',
+                'marginBottom': '10px',
+                'fontWeight': '700'
+            }),
+            html.P([
+                "Para exportar imágenes PNG necesitas tener Kaleido instalado.",
+                html.Br(), html.Br(),
+                html.Strong("En tu entorno local:"),
+                html.Br(),
+                "pip install kaleido",
+                html.Br(), html.Br(),
+                html.Strong("En Render:"),
+                html.Br(),
+                "1. Agrega 'kaleido' a tu archivo requirements.txt",
+                html.Br(),
+                "2. Redeploya la aplicación",
+                html.Br(), html.Br(),
+                "Nota: Las exportaciones individuales de cada visualización (botón de cámara) ",
+                "funcionan porque usan el navegador. Esta opción necesita Kaleido en el servidor."
+            ], style={
+                'color': '#7F1D1D',
+                'fontSize': '14px',
+                'textAlign': 'left',
+                'lineHeight': '1.8',
+                'fontFamily': 'monospace',
+                'backgroundColor': '#FEE2E2',
+                'padding': '15px',
+                'borderRadius': '8px'
+            })
+        ], style={
+            'padding': '30px',
+            'backgroundColor': '#FEF2F2',
+            'borderRadius': '12px',
+            'border': '2px solid #EF4444',
+            'textAlign': 'center'
+        })
 
     # Si no hay contenido en el dashboard
     if not dashboard_content:
@@ -19245,6 +19371,7 @@ def exportar_visualizaciones_global(n_clicks, dashboard_content):
         # Exportar cada figura encontrada
         botones = []
         contador_exitosos = 0
+        errores_detallados = []
 
         for idx, figura_dict in enumerate(figuras_encontradas, 1):
             try:
@@ -19270,9 +19397,13 @@ def exportar_visualizaciones_global(n_clicks, dashboard_content):
                     contador_exitosos += 1
                     logger.info(f"✅ Visualización {idx} exportada correctamente")
                 else:
-                    logger.warning(f"⚠️ No se pudo generar PNG para visualización {idx}")
+                    error_msg = f"VIZ {idx}: No se generó imagen (verificar kaleido)"
+                    errores_detallados.append(error_msg)
+                    logger.warning(f"⚠️ {error_msg}")
 
             except Exception as e:
+                error_msg = f"VIZ {idx}: {str(e)[:100]}"
+                errores_detallados.append(error_msg)
                 logger.error(f"❌ Error exportando visualización {idx}: {str(e)}")
                 continue
 
@@ -19341,20 +19472,42 @@ def exportar_visualizaciones_global(n_clicks, dashboard_content):
                 }),
                 html.P([
                     "Se detectaron figuras pero hubo errores al exportarlas.",
+                    html.Br(), html.Br(),
+                    html.Strong("Causa más probable:"),
                     html.Br(),
-                    "Posibles causas:",
+                    "• Kaleido no está instalado o no se puede inicializar en el servidor",
+                    html.Br(), html.Br(),
+                    html.Strong("Solución:"),
                     html.Br(),
-                    "• Las visualizaciones están vacías o sin datos",
+                    "1. Verifica que 'kaleido' esté en requirements.txt",
                     html.Br(),
-                    "• Faltan dependencias (instala: pip install kaleido)",
+                    "2. Redeploya la aplicación en Render",
                     html.Br(),
-                    "• Las figuras no están completamente renderizadas"
+                    "3. Verifica los logs del servidor al iniciar",
+                    html.Br(), html.Br(),
+                    html.Strong("Alternativa:"),
+                    html.Br(),
+                    "Usa el botón de cámara 📷 en cada gráfica individual para exportar usando el navegador",
                 ], style={
                     'color': '#78350F',
                     'fontSize': '14px',
                     'textAlign': 'left',
                     'lineHeight': '1.8'
-                })
+                }),
+                
+                # Mostrar errores detallados si existen
+                html.Div([
+                    html.Hr(style={'margin': '20px 0', 'borderColor': '#F59E0B'}),
+                    html.Strong("Detalles técnicos:", style={'color': '#92400E'}),
+                    html.Ul([
+                        html.Li(error, style={
+                            'fontSize': '12px',
+                            'color': '#78350F',
+                            'fontFamily': 'monospace',
+                            'marginBottom': '5px'
+                        }) for error in errores_detallados[:5]  # Mostrar max 5 errores
+                    ], style={'textAlign': 'left', 'marginTop': '10px'})
+                ], style={'marginTop': '15px'}) if errores_detallados else html.Div()
             ], style={
                 'padding': '30px',
                 'backgroundColor': '#FFFBEB',
@@ -22142,6 +22295,13 @@ logger.info("")
 # ==============================================================================
 # FIN DEL SISTEMA DASH PATCH
 # ==============================================================================
+
+
+
+
+
+
+
 
 
 
