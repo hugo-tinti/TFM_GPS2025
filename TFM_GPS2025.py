@@ -19177,17 +19177,25 @@ except Exception as _e:
     Input('store-figuras-dom', 'data'),
     prevent_initial_call=True
 )
+@app.callback(
+    Output('area-exportacion-global', 'children'),
+    Input('btn-exportar-global', 'n_clicks'),
+    State('store-figuras-dom', 'data'),
+    prevent_initial_call=True
+)
+def exportar_visualizaciones_global(n_clicks, store_data):
+    """Exporta todas las visualizaciones actuales a un ZIP descargable.
 
-def exportar_visualizaciones_global(store_data):
-    """Exporta todas las figuras del dashboard a un ZIP descargable.
-
-    - Recorre las figuras serializadas en store_data['figures'] (dicts Plotly).
-    - Convierte cada una a PNG con SistemaExportacion.exportar_plotly_png.
-    - Empaqueta todo en un ZIP en memoria y devuelve un link de descarga único.
+    - Usa las figuras serializadas en store_data['figures'], generadas previamente.
+    - Convierte cada figura a PNG mediante SistemaExportacion.exportar_plotly_png().
+    - Empaqueta los PNG en un ZIP en memoria y devuelve un botón único de descarga.
     """
     import io, zipfile, base64
 
-    if not store_data or not store_data.get("figures"):
+    if not n_clicks or n_clicks == 0:
+        raise dash.exceptions.PreventUpdate
+
+    if not store_data or not store_data.get('figures'):
         return html.Div([
             html.I(className="fas fa-info-circle", style={
                 'fontSize': '48px',
@@ -19208,7 +19216,7 @@ def exportar_visualizaciones_global(store_data):
                 html.Br(),
                 "3. Actualiza al menos una visualización",
                 html.Br(),
-                "4. Luego haz clic en "EXPORTAR VISUALIZACIONES" nuevamente.",
+                "4. Luego haz clic en 'EXPORTAR VISUALIZACIONES' nuevamente.",
             ], style={'fontSize': '14px', 'color': '#4B5563', 'textAlign': 'center'})
         ], style={
             'textAlign': 'center',
@@ -19218,7 +19226,7 @@ def exportar_visualizaciones_global(store_data):
             'border': '1px solid #DBEAFE'
         })
 
-    figuras = store_data.get("figures", [])
+    figuras = store_data.get('figures', [])
     if not isinstance(figuras, list) or len(figuras) == 0:
         logger.warning("exportacion_global: store_data['figures'] vacío o malformado")
         return html.Div("❌ No se encontraron figuras para exportar", style={'color': '#EF4444'})
@@ -19226,7 +19234,7 @@ def exportar_visualizaciones_global(store_data):
     zip_buffer = io.BytesIO()
     exitosas = 0
 
-    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
         for idx, fig_dict in enumerate(figuras, 1):
             try:
                 fig = go.Figure(fig_dict)
@@ -19267,8 +19275,6 @@ def exportar_visualizaciones_global(store_data):
             }
         )
     ], style={'textAlign': 'center', 'padding': '20px'})
-
-
 
 
 @app.callback(
