@@ -3054,16 +3054,6 @@ class SistemaExportacion:
             Bytes del PNG generado
         """
         try:
-            # Fix para entornos Docker/Render/contenedores
-            try:
-                import plotly.io as pio
-                _args = list(pio.kaleido.scope.chromium_args)
-                for _flag in ["--no-sandbox", "--disable-gpu", "--single-process"]:
-                    if _flag not in _args:
-                        _args.append(_flag)
-                pio.kaleido.scope.chromium_args = tuple(_args)
-            except Exception:
-                pass
             img_bytes = fig.to_image(format="png", width=1920, height=1080, scale=2)
             return img_bytes
         except Exception as e:
@@ -8841,7 +8831,6 @@ def crear_dashboard_opcion_b_v22(df_data):
     if len(df_data) == 0:
         return html.Div([
             html.H3("No hay datos disponibles"),
-            dcc.Store(id='store-figuras-dom', storage_type='memory'),
             dcc.Store(id='collapse-no-entrenar-state', data=True),
             dcc.Store(id='collapse-reducir-state', data=False),
             dcc.Store(id='collapse-normal-state', data=False),
@@ -19105,97 +19094,23 @@ def toggle_auto_refresh(switch_value):
 # ============================================================================
 # CALLBACK PARA EXPORTACIÓN GLOBAL DE VISUALIZACIONES
 # ============================================================================
-
-
-# ================================================================
-# EXPORTACION FIX: Clientside callback recolecta figuras del DOM
-# Soluciona "No se encontraron visualizaciones" en Render/Docker
-# ================================================================
-try:
-    app.clientside_callback(
-        """
-        function(n_clicks) {
-            if (!n_clicks || n_clicks === 0) return window.dash_clientside.no_update;
-            var graphDivs = document.querySelectorAll('.js-plotly-plot');
-            var count = graphDivs.length;
-            console.log('GPS Export - graficas encontradas: ' + count);
-
-            if (count === 0) {
-                return {figures: [], ts: new Date().getTime()};
-            }
-
-            // Metodo 1: Plotly.toImage -> link de descarga manual (mas compatible)
-            function descargarFigura(div, index) {
-                try {
-                    Plotly.toImage(div, {
-                        format: 'png',
-                        width: 1920,
-                        height: 1080,
-                        scale: 1
-                    }).then(function(imgData) {
-                        var link = document.createElement('a');
-                        link.href = imgData;
-                        link.download = 'GPS_Visualizacion_' + (index + 1) + '.png';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        console.log('GPS Export - descargada figura ' + (index+1));
-                    }).catch(function(err) {
-                        console.error('GPS Export - error en figura ' + (index+1) + ': ', err);
-                        // Fallback: intentar con Plotly.downloadImage
-                        try {
-                            Plotly.downloadImage(div, {
-                                format: 'png', width: 1920, height: 1080, scale: 1,
-                                filename: 'GPS_Visualizacion_' + (index + 1)
-                            });
-                        } catch(e2) { console.error('Fallback tambien fallo:', e2); }
-                    });
-                } catch(e) {
-                    console.error('GPS Export - excepcion en figura ' + (index+1) + ': ', e);
-                }
-            }
-
-            graphDivs.forEach(function(div, index) {
-                setTimeout(function() { descargarFigura(div, index); }, index * 1200);
-            });
-
-            var lightweight = [];
-            for (var i = 0; i < count; i++) { lightweight.push({idx: i}); }
-            return {figures: lightweight, ts: new Date().getTime()};
-        }
-        """,
-        Output('store-figuras-dom', 'data'),
-        Input('btn-exportar-global', 'n_clicks'),
-        prevent_initial_call=True
-    )
-    logger.info("Clientside callback exportacion-DOM configurado correctamente")
-except Exception as _e:
-    logger.warning(f"Clientside callback exportacion-DOM no configurado: {_e}")
-
 @app.callback(
     Output('area-exportacion-global', 'children'),
-    Input('store-figuras-dom', 'data'),
-    prevent_initial_call=True
+    [Input('btn-exportar-global', 'n_clicks')],
+    [State('dashboard', 'children')]
 )
-@app.callback(
-    Output('area-exportacion-global', 'children'),
-    Input('btn-exportar-global', 'n_clicks'),
-    State('store-figuras-dom', 'data'),
-    prevent_initial_call=True
-)
-def exportar_visualizaciones_global(n_clicks, store_data):
-    """Exporta todas las visualizaciones actuales a un ZIP descargable.
-
-    - Usa las figuras serializadas en store_data['figures'], generadas previamente.
-    - Convierte cada figura a PNG mediante SistemaExportacion.exportar_plotly_png().
-    - Empaqueta los PNG en un ZIP en memoria y devuelve un botón único de descarga.
+def exportar_visualizaciones_global(n_clicks, dashboard_content):
     """
-    import io, zipfile, base64
+    Exporta las visualizaciones del dashboard a PNG de alta calidad.
 
-    if not n_clicks or n_clicks == 0:
-        raise dash.exceptions.PreventUpdate
+    Extrae las figuras del contenido del dashboard y las convierte a PNG.
+    Usa State('dashboard', 'children') para acceder a las viz sin IDs específicos.
+    """
+    if n_clicks == 0:
+        return ""
 
-    if not store_data or not store_data.get('figures'):
+    # Si no hay contenido en el dashboard
+    if not dashboard_content:
         return html.Div([
             html.I(className="fas fa-info-circle", style={
                 'fontSize': '48px',
@@ -19216,66 +19131,275 @@ def exportar_visualizaciones_global(n_clicks, store_data):
                 html.Br(),
                 "3. Actualiza al menos una visualización",
                 html.Br(),
-                "4. Luego haz clic en 'EXPORTAR VISUALIZACIONES' nuevamente.",
-            ], style={'fontSize': '14px', 'color': '#4B5563', 'textAlign': 'center'})
+                "4. Luego haz clic en EXPORTAR VISUALIZACIONES"
+            ], style={
+                'color': '#1E40AF',
+                'fontSize': '14px',
+                'textAlign': 'left',
+                'lineHeight': '1.8'
+            })
         ], style={
-            'textAlign': 'center',
             'padding': '30px',
             'backgroundColor': '#EFF6FF',
             'borderRadius': '12px',
-            'border': '1px solid #DBEAFE'
+            'border': '2px solid #3B82F6',
+            'textAlign': 'center'
         })
 
-    figuras = store_data.get('figures', [])
-    if not isinstance(figuras, list) or len(figuras) == 0:
-        logger.warning("exportacion_global: store_data['figures'] vacío o malformado")
-        return html.Div("❌ No se encontraron figuras para exportar", style={'color': '#EF4444'})
+    try:
+        figuras_encontradas = []
 
-    zip_buffer = io.BytesIO()
-    exitosas = 0
+        # Función recursiva para extraer todas las figuras del dashboard
+        def extraer_figuras_recursivo(contenido, figuras_lista, profundidad=0, max_profundidad=20):
+            """
+            Busca recursivamente todas las figuras de Plotly en el contenido del dashboard.
 
-    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
-        for idx, fig_dict in enumerate(figuras, 1):
+            Args:
+                contenido: Contenido a buscar (dict, list, o cualquier objeto)
+                figuras_lista: Lista donde se agregarán las figuras encontradas
+                profundidad: Nivel actual de recursión
+                max_profundidad: Máximo nivel de recursión permitido
+            """
+            # Limitar profundidad para evitar bucles infinitos
+            if profundidad > max_profundidad:
+                return
+
             try:
-                fig = go.Figure(fig_dict)
-                img_bytes = SistemaExportacion.exportar_plotly_png(fig, f"viz_{idx:02d}")
-                if not img_bytes:
-                    continue
-                zf.writestr(f"GPS_Viz_{idx:02d}.png", img_bytes)
-                exitosas += 1
+                # Caso 1: Es un diccionario
+                if isinstance(contenido, dict):
+                    # Buscar directamente una clave 'figure'
+                    if 'figure' in contenido:
+                        figura = contenido['figure']
+                        if isinstance(figura, dict) and 'data' in figura:
+                            figuras_lista.append(figura)
+
+                    # Buscar en 'props' (estructura típica de Dash)
+                    if 'props' in contenido:
+                        props = contenido['props']
+                        if isinstance(props, dict):
+                            # Buscar figure en props
+                            if 'figure' in props:
+                                figura = props['figure']
+                                if isinstance(figura, dict) and 'data' in figura:
+                                    figuras_lista.append(figura)
+
+                            # Buscar en children de props
+                            if 'children' in props:
+                                extraer_figuras_recursivo(props['children'], figuras_lista, profundidad + 1, max_profundidad)
+
+                    # Buscar en todas las claves del diccionario
+                    for key, value in contenido.items():
+                        if key not in ['figure', 'props']:  # Ya procesados
+                            extraer_figuras_recursivo(value, figuras_lista, profundidad + 1, max_profundidad)
+
+                # Caso 2: Es una lista
+                elif isinstance(contenido, list):
+                    for item in contenido:
+                        extraer_figuras_recursivo(item, figuras_lista, profundidad + 1, max_profundidad)
+
             except Exception as e:
-                logger.error(f"exportacion_global: error en figura {idx}: {e}")
+                logger.debug(f"Excepción capturada: {e}")
+                # Ignorar errores en elementos específicos y continuar
+                pass
+
+        # Extraer todas las figuras del dashboard
+        extraer_figuras_recursivo(dashboard_content, figuras_encontradas)
+
+        # Si no se encontraron figuras
+        if len(figuras_encontradas) == 0:
+            return html.Div([
+                html.I(className="fas fa-exclamation-triangle", style={
+                    'fontSize': '48px',
+                    'color': '#F59E0B',
+                    'marginBottom': '15px'
+                }),
+                html.H4("⚠️ No se encontraron visualizaciones", style={
+                    'color': '#92400E',
+                    'marginBottom': '10px',
+                    'fontWeight': '700'
+                }),
+                html.P([
+                    "Asegúrate de:",
+                    html.Br(),
+                    "1. Haber cargado los datos correctamente",
+                    html.Br(),
+                    "2. Haber actualizado al menos una visualización",
+                    html.Br(),
+                    "3. Esperar a que las gráficas se muestren completamente",
+                    html.Br(),
+                    "4. Intentar hacer scroll en el dashboard para verificar que hay gráficas visibles"
+                ], style={
+                    'color': '#78350F',
+                    'fontSize': '14px',
+                    'textAlign': 'left',
+                    'lineHeight': '1.8'
+                })
+            ], style={
+                'padding': '30px',
+                'backgroundColor': '#FFFBEB',
+                'borderRadius': '12px',
+                'border': '2px solid #F59E0B',
+                'textAlign': 'center'
+            })
+
+        # Exportar cada figura encontrada
+        botones = []
+        contador_exitosos = 0
+
+        for idx, figura_dict in enumerate(figuras_encontradas, 1):
+            try:
+                # Convertir dict a objeto Figure de Plotly
+                fig = go.Figure(figura_dict)
+
+                # Exportar a PNG
+                nombre_archivo = f"Visualizacion_{idx}"
+                img_bytes = SistemaExportacion.exportar_plotly_png(fig, nombre_archivo)
+
+                if img_bytes:
+                    # Crear botón de descarga
+                    timestamp = dt.now().strftime('%Y%m%d_%H%M%S')
+                    filename = f"{nombre_archivo}_{timestamp}.png"
+
+                    boton = SistemaExportacion.crear_boton_descarga(
+                        img_bytes,
+                        filename,
+                        f"📥 VIZ {idx}"
+                    )
+
+                    botones.append(boton)
+                    contador_exitosos += 1
+                    logger.info(f"✅ Visualización {idx} exportada correctamente")
+                else:
+                    logger.warning(f"⚠️ No se pudo generar PNG para visualización {idx}")
+
+            except Exception as e:
+                logger.error(f"❌ Error exportando visualización {idx}: {str(e)}")
                 continue
 
-    if exitosas == 0:
-        return html.Div("❌ No se pudo generar ninguna imagen", style={'color': '#EF4444'})
+        # Retornar resultado
+        if contador_exitosos > 0:
+            return html.Div([
+                html.Div([
+                    html.I(className="fas fa-check-circle", style={
+                        'fontSize': '48px',
+                        'color': '#10B981',
+                        'marginBottom': '15px'
+                    }),
+                    html.H4(f"✅ {contador_exitosos} visualización{'es' if contador_exitosos > 1 else ''} exportada{'s' if contador_exitosos > 1 else ''} con éxito", 
+                           style={
+                               'color': '#065F46',
+                               'marginBottom': '10px',
+                               'fontWeight': '800',
+                               'fontSize': '18px'
+                           }),
+                    html.P("Haz clic en los botones de abajo para descargar cada archivo PNG", style={
+                        'color': '#64748B',
+                        'fontSize': '14px',
+                        'marginBottom': '20px'
+                    }),
+                ], style={'textAlign': 'center'}),
 
-    zip_buffer.seek(0)
-    b64_zip = base64.b64encode(zip_buffer.read()).decode()
+                html.Div(botones, style={
+                    'display': 'flex',
+                    'gap': '12px',
+                    'justifyContent': 'center',
+                    'flexWrap': 'wrap',
+                    'marginTop': '20px'
+                }),
 
-    return html.Div([
-        html.Div("✅ Exportación lista", style={
-            'fontWeight': '700',
-            'color': '#065F46',
-            'marginBottom': '10px'
-        }),
-        html.A(
-            "DESCARGAR TODAS LAS VISUALIZACIONES (ZIP)",
-            href=f"data:application/zip;base64,{b64_zip}",
-            download="GPS_visualizaciones.zip",
-            style={
-                'backgroundColor': '#2563EB',
-                'color': 'white',
-                'padding': '14px 28px',
-                'borderRadius': '10px',
-                'textDecoration': 'none',
-                'fontWeight': 'bold',
-                'display': 'inline-block',
-                'boxShadow': '0 10px 15px rgba(15,23,42,0.2)'
-            }
-        )
-    ], style={'textAlign': 'center', 'padding': '20px'})
+                html.Div([
+                    html.P([
+                        html.I(className="fas fa-info-circle", style={'marginRight': '8px'}),
+                        f"Se exportaron {contador_exitosos} de {len(figuras_encontradas)} figuras detectadas. ",
+                        "Las imágenes tienen resolución 1920x1080 (Full HD) con escala 2x para máxima calidad."
+                    ], style={
+                        'fontSize': '12px',
+                        'color': '#64748B',
+                        'marginTop': '20px',
+                        'textAlign': 'center',
+                        'fontStyle': 'italic'
+                    })
+                ])
+            ], style={
+                'padding': '25px',
+                'backgroundColor': 'white',
+                'borderRadius': '12px',
+                'border': '2px solid #10B981',
+                'boxShadow': '0 4px 6px rgba(0,0,0,0.05)'
+            })
+        else:
+            return html.Div([
+                html.I(className="fas fa-exclamation-triangle", style={
+                    'fontSize': '48px',
+                    'color': '#F59E0B',
+                    'marginBottom': '15px'
+                }),
+                html.H4(f"⚠️ No se pudieron exportar las {len(figuras_encontradas)} figuras detectadas", style={
+                    'color': '#92400E',
+                    'marginBottom': '10px',
+                    'fontWeight': '700'
+                }),
+                html.P([
+                    "Se detectaron figuras pero hubo errores al exportarlas.",
+                    html.Br(),
+                    "Posibles causas:",
+                    html.Br(),
+                    "• Las visualizaciones están vacías o sin datos",
+                    html.Br(),
+                    "• Faltan dependencias (instala: pip install kaleido)",
+                    html.Br(),
+                    "• Las figuras no están completamente renderizadas"
+                ], style={
+                    'color': '#78350F',
+                    'fontSize': '14px',
+                    'textAlign': 'left',
+                    'lineHeight': '1.8'
+                })
+            ], style={
+                'padding': '30px',
+                'backgroundColor': '#FFFBEB',
+                'borderRadius': '12px',
+                'border': '2px solid #F59E0B',
+                'textAlign': 'center'
+            })
 
+    except Exception as e:
+        logger.debug(f"Excepción capturada: {e}")
+        return html.Div([
+            html.I(className="fas fa-times-circle", style={
+                'fontSize': '48px',
+                'color': '#EF4444',
+                'marginBottom': '15px'
+            }),
+            html.H4("❌ Error al procesar la exportación", style={
+                'color': '#991B1B',
+                'marginBottom': '10px',
+                'fontWeight': '700'
+            }),
+            html.P(f"Detalles técnicos: {str(e)}", style={
+                'color': '#7F1D1D',
+                'fontSize': '13px',
+                'fontFamily': 'monospace',
+                'backgroundColor': '#FEE2E2',
+                'padding': '10px',
+                'borderRadius': '6px',
+                'wordBreak': 'break-word'
+            })
+        ], style={
+            'padding': '30px',
+            'backgroundColor': '#FEF2F2',
+            'borderRadius': '12px',
+            'border': '2px solid #EF4444',
+            'textAlign': 'center'
+        })
+
+
+
+
+
+# ======================================================================
+# CALLBACK PARA ACTUALIZAR ALERTAS INTELIGENTES
+# ======================================================================
 
 @app.callback(
     [
