@@ -8841,6 +8841,7 @@ def crear_dashboard_opcion_b_v22(df_data):
     if len(df_data) == 0:
         return html.Div([
             html.H3("No hay datos disponibles"),
+            dcc.Store(id='store-figuras-dom', storage_type='memory'),
             dcc.Store(id='collapse-no-entrenar-state', data=True),
             dcc.Store(id='collapse-reducir-state', data=False),
             dcc.Store(id='collapse-normal-state', data=False),
@@ -19104,10 +19105,57 @@ def toggle_auto_refresh(switch_value):
 # ============================================================================
 # CALLBACK PARA EXPORTACIÓN GLOBAL DE VISUALIZACIONES
 # ============================================================================
+
+
+# ================================================================
+# EXPORTACION FIX: Clientside callback recolecta figuras del DOM
+# Soluciona "No se encontraron visualizaciones" en Render/Docker
+# ================================================================
+try:
+    app.clientside_callback(
+        """
+        function(n_clicks) {
+            if (!n_clicks || n_clicks === 0) return window.dash_clientside.no_update;
+            var graphDivs = document.querySelectorAll('.js-plotly-plot');
+            var count = graphDivs.length;
+
+            // Descarga directa desde el browser usando Plotly.downloadImage
+            // No requiere kaleido ni procesamiento en el servidor
+            graphDivs.forEach(function(div, index) {
+                setTimeout(function() {
+                    try {
+                        Plotly.downloadImage(div, {
+                            format: 'png',
+                            width: 1920,
+                            height: 1080,
+                            scale: 2,
+                            filename: 'GPS_Visualizacion_' + (index + 1)
+                        });
+                    } catch(e) {
+                        console.warn('GPS Export - error descargando figura ' + (index+1) + ':', e);
+                    }
+                }, index * 900);
+            });
+
+            console.log('GPS Export - iniciando descarga de ' + count + ' PNG');
+            // Enviar solo el conteo al servidor (sin datos pesados)
+            var lightweight = [];
+            for (var i = 0; i < count; i++) { lightweight.push({idx: i}); }
+            return {figures: lightweight, ts: new Date().getTime()};
+        }
+        """,
+        Output('store-figuras-dom', 'data'),
+        Input('btn-exportar-global', 'n_clicks'),
+        prevent_initial_call=True
+    )
+    logger.info("Clientside callback exportacion-DOM configurado correctamente")
+except Exception as _e:
+    logger.warning(f"Clientside callback exportacion-DOM no configurado: {_e}")
+
 @app.callback(
     Output('area-exportacion-global', 'children'),
-    [Input('btn-exportar-global', 'n_clicks')],
-    [State('dashboard', 'children')]
+    Input('store-figuras-dom', 'data'),
+    prevent_initial_call=True
 )
 def exportar_visualizaciones_global(store_data):
     """
@@ -19211,7 +19259,41 @@ def exportar_visualizaciones_global(store_data):
                 pass
 
         # Extraer todas las figuras del dashboard
-        extraer_figuras_recursivo(dashboard_content, figuras_encontradas)
+        figuras_encontradas = store_data.get("figures", []) if store_data else []  # FIX: DOM via store
+
+        # ================================================================
+        # FIX v2: Descargas ya iniciadas via Plotly.downloadImage (clientside)
+        # Solo mostramos el estado visual - NO se usa kaleido
+        # ================================================================
+        _count = len(figuras_encontradas)
+        if _count == 0:
+            return html.Div([
+                html.I(className="fas fa-exclamation-triangle",
+                       style={"fontSize": "36px", "color": "#F59E0B", "marginBottom": "12px"}),
+                html.H4("No se encontraron visualizaciones",
+                        style={"color": "#92400E", "fontWeight": "700", "marginBottom": "8px"}),
+                html.P(["Asegurate de:", html.Br(),
+                        "1. Haber cargado los datos correctamente", html.Br(),
+                        "2. Haber actualizado al menos una visualizacion", html.Br(),
+                        "3. Esperar a que las graficas se muestren completamente"],
+                       style={"color": "#78350F", "fontSize": "13px",
+                              "textAlign": "left", "lineHeight": "1.8"}),
+            ], style={"padding": "25px", "backgroundColor": "#FFFBEB",
+                      "borderRadius": "12px", "border": "2px solid #F59E0B", "textAlign": "center"})
+        return html.Div([
+            html.I(className="fas fa-check-circle",
+                   style={"fontSize": "40px", "color": "#10B981", "marginBottom": "12px"}),
+            html.H4(
+                f"{_count} visualizacion{'es' if _count != 1 else ''} descargando...",
+                style={"color": "#065F46", "fontWeight": "800",
+                       "fontSize": "18px", "marginBottom": "8px"}),
+            html.P("Los archivos PNG estan en tu carpeta de descargas del navegador.",
+                   style={"color": "#64748B", "fontSize": "14px", "marginBottom": "4px"}),
+            html.P("Resolucion: 1920x1080 Full HD - Escala 2x",
+                   style={"color": "#94A3B8", "fontSize": "12px", "fontStyle": "italic"}),
+        ], style={"padding": "25px", "backgroundColor": "#D1FAE5",
+                  "borderRadius": "12px", "border": "2px solid #10B981", "textAlign": "center"})
+        # ---- FIN FIX v2 --- el resto del codigo con kaleido queda como respaldo inactivo
 
         # Si no se encontraron figuras
         if len(figuras_encontradas) == 0:
