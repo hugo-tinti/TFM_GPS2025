@@ -1,8 +1,6 @@
 import os
 from groq import Groq
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-client = Groq(api_key=GROQ_API_KEY)
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -3056,6 +3054,16 @@ class SistemaExportacion:
             Bytes del PNG generado
         """
         try:
+            # Fix para entornos Docker/Render/contenedores
+            try:
+                import plotly.io as pio
+                _args = list(pio.kaleido.scope.chromium_args)
+                for _flag in ["--no-sandbox", "--disable-gpu", "--single-process"]:
+                    if _flag not in _args:
+                        _args.append(_flag)
+                pio.kaleido.scope.chromium_args = tuple(_args)
+            except Exception:
+                pass
             img_bytes = fig.to_image(format="png", width=1920, height=1080, scale=2)
             return img_bytes
         except Exception as e:
@@ -19101,18 +19109,16 @@ def toggle_auto_refresh(switch_value):
     [Input('btn-exportar-global', 'n_clicks')],
     [State('dashboard', 'children')]
 )
-def exportar_visualizaciones_global(n_clicks, dashboard_content):
+def exportar_visualizaciones_global(store_data):
     """
     Exporta las visualizaciones del dashboard a PNG de alta calidad.
 
     Extrae las figuras del contenido del dashboard y las convierte a PNG.
     Usa State('dashboard', 'children') para acceder a las viz sin IDs específicos.
     """
-    if n_clicks == 0:
-        return ""
 
     # Si no hay contenido en el dashboard
-    if not dashboard_content:
+    if not store_data or not store_data.get("figures"):
         return html.Div([
             html.I(className="fas fa-info-circle", style={
                 'fontSize': '48px',
