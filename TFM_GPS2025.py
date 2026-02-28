@@ -9229,17 +9229,6 @@ app.layout = html.Div(id='main-container', style={'backgroundColor': '#FFFFFF', 
     html.Div([
         html.Div([
             html.H1([html.I(className="fas fa-chart-line", style={'marginRight': '16px'}), "SISTEMA GPS PROFESIONAL"], className='header-title'),
-            html.Img(
-                src='assets/T4.jpg',
-                style={
-                    'height': '200px',
-                    'width': '600px',
-                    'objectFit': 'contain',
-                    'position': 'absolute',
-                    'top': '10px',
-                    'right': '20px'
-                }
-            ),
             html.P("Version4.3.7 - 22 VIZ", className='header-subtitle'),
             html.Div([
                 html.Span([html.I(className="fas fa-trophy"), " Elite Edition"], className='badge-premium'),
