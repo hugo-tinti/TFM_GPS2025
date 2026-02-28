@@ -19118,27 +19118,47 @@ try:
             if (!n_clicks || n_clicks === 0) return window.dash_clientside.no_update;
             var graphDivs = document.querySelectorAll('.js-plotly-plot');
             var count = graphDivs.length;
+            console.log('GPS Export - graficas encontradas: ' + count);
 
-            // Descarga directa desde el browser usando Plotly.downloadImage
-            // No requiere kaleido ni procesamiento en el servidor
+            if (count === 0) {
+                return {figures: [], ts: new Date().getTime()};
+            }
+
+            // Metodo 1: Plotly.toImage -> link de descarga manual (mas compatible)
+            function descargarFigura(div, index) {
+                try {
+                    Plotly.toImage(div, {
+                        format: 'png',
+                        width: 1920,
+                        height: 1080,
+                        scale: 1
+                    }).then(function(imgData) {
+                        var link = document.createElement('a');
+                        link.href = imgData;
+                        link.download = 'GPS_Visualizacion_' + (index + 1) + '.png';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        console.log('GPS Export - descargada figura ' + (index+1));
+                    }).catch(function(err) {
+                        console.error('GPS Export - error en figura ' + (index+1) + ': ', err);
+                        // Fallback: intentar con Plotly.downloadImage
+                        try {
+                            Plotly.downloadImage(div, {
+                                format: 'png', width: 1920, height: 1080, scale: 1,
+                                filename: 'GPS_Visualizacion_' + (index + 1)
+                            });
+                        } catch(e2) { console.error('Fallback tambien fallo:', e2); }
+                    });
+                } catch(e) {
+                    console.error('GPS Export - excepcion en figura ' + (index+1) + ': ', e);
+                }
+            }
+
             graphDivs.forEach(function(div, index) {
-                setTimeout(function() {
-                    try {
-                        Plotly.downloadImage(div, {
-                            format: 'png',
-                            width: 1920,
-                            height: 1080,
-                            scale: 2,
-                            filename: 'GPS_Visualizacion_' + (index + 1)
-                        });
-                    } catch(e) {
-                        console.warn('GPS Export - error descargando figura ' + (index+1) + ':', e);
-                    }
-                }, index * 900);
+                setTimeout(function() { descargarFigura(div, index); }, index * 1200);
             });
 
-            console.log('GPS Export - iniciando descarga de ' + count + ' PNG');
-            // Enviar solo el conteo al servidor (sin datos pesados)
             var lightweight = [];
             for (var i = 0; i < count; i++) { lightweight.push({idx: i}); }
             return {figures: lightweight, ts: new Date().getTime()};
