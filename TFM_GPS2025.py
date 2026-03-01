@@ -5743,7 +5743,7 @@ def prediccion_fatiga_ici(df_ici, umbral_ici=0.60):
         df_fatiga[feat] = pd.to_numeric(df_fatiga[feat], errors='coerce').replace([np.inf, -np.inf], np.nan).fillna(0)
     X = np.nan_to_num(df_fatiga[features].values.astype(np.float64), nan=0.0, posinf=0.0, neginf=0.0)
     y = df_fatiga['riesgo_fatiga'].values
-    clf = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=5)
+    clf = RandomForestClassifier(n_estimators=30, random_state=42, max_depth=4, n_jobs=1)
     clf.fit(X, y)
     importancias = pd.DataFrame({'Feature': features, 'Importancia': clf.feature_importances_}).sort_values('Importancia', ascending=False)
     df_fatiga['prob_riesgo'] = clf.predict_proba(X)[:, 1]
@@ -12183,7 +12183,7 @@ def ejecutar_etapa1_isolation_forest_v22(df_gps, contamination=0.1):
     if len(df_anom) < 20:
         return None, {"n_anomalias": 0, "pct_anomalias": 0}
     X = df_anom[features].values
-    iso = IsolationForest(contamination=contamination, random_state=42, n_estimators=100)
+    iso = IsolationForest(contamination=contamination, random_state=42, n_estimators=30)
     df_anom['anomalia'] = iso.fit_predict(X)
     df_anom['anomalia_label'] = df_anom['anomalia'].map({1: 'Normal', -1: 'Anomalía'})
     n_anom = (df_anom['anomalia'] == -1).sum()
@@ -12205,7 +12205,7 @@ def ejecutar_etapa2_random_forest_v22(df_anom):
     if len(df_rf) < 20:
         return df_anom, {"n_bajo": 0, "n_medio": 0, "n_alto": 0}
     X, y = df_rf[features].values, df_rf['rendimiento']
-    rf = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=10)
+    rf = RandomForestClassifier(n_estimators=30, random_state=42, max_depth=5, n_jobs=1)
     rf.fit(X, y)
     df_rf['rendimiento_pred'] = rf.predict(X)
     df_rf['prob_rendimiento'] = rf.predict_proba(X).max(axis=1) * 100
@@ -21824,9 +21824,7 @@ app.clientside_callback(
     """
     function(n_clicks) {
         if (!n_clicks || n_clicks === 0) return '';
-
         function sectionTieneContenido(sec) {
-            // Tiene gráfico Plotly con datos
             var graph = sec.querySelector('.js-plotly-plot');
             if (graph && graph.data && graph.data.length > 0) {
                 var conDatos = graph.data.some(function(t) {
@@ -21836,129 +21834,73 @@ app.clientside_callback(
                 });
                 if (conDatos) return true;
             }
-            // Tiene tabla Dash con filas
             var celdas = sec.querySelectorAll('.dash-cell');
             if (celdas && celdas.length > 0) return true;
-            // Tiene tabla HTML normal
             var filas = sec.querySelectorAll('tr');
             if (filas && filas.length > 1) return true;
             return false;
         }
-
         var todasSecs = document.querySelectorAll('.viz-section');
         var secsValidas = Array.from(todasSecs).filter(sectionTieneContenido);
-
         if (secsValidas.length === 0) {
             alert('No hay secciones con datos. Cargá los datos y navegá a la VIZ primero.');
             return '';
         }
-
         function generarPDF() {
             var jsPDF = window.jspdf ? window.jspdf.jsPDF : (window.jsPDF || null);
             if (!jsPDF) { alert('Error: jsPDF no disponible.'); return; }
-
             var fecha = new Date().toISOString().slice(0,10);
             var pdf = new jsPDF('landscape', 'mm', 'a4');
             var pageW = pdf.internal.pageSize.getWidth();
             var pageH = pdf.internal.pageSize.getHeight();
-
-            // Capturar secciones en secuencia (no en paralelo para evitar bugs de html2canvas)
             var idx = 0;
             function capturarSiguiente() {
-                if (idx >= secsValidas.length) {
-                    pdf.save('TFM_GPS_' + fecha + '.pdf');
-                    return;
-                }
+                if (idx >= secsValidas.length) { pdf.save('TFM_GPS_' + fecha + '.pdf'); return; }
                 var sec = secsValidas[idx];
-                // Ocultar botones de filtro dentro de la sección para un PDF más limpio
                 var filtros = sec.querySelectorAll('.btn-update, .filter-box button, .modebar');
                 filtros.forEach(function(el){ el.style.visibility='hidden'; });
-
-                html2canvas(sec, {
-                    scale: 1.5,
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    allowTaint: true
-                }).then(function(canvas) {
-                    // Restaurar visibilidad
+                html2canvas(sec, { scale: 1.5, useCORS: true, backgroundColor: '#ffffff', logging: false, allowTaint: true })
+                .then(function(canvas) {
                     filtros.forEach(function(el){ el.style.visibility=''; });
-
                     if (idx > 0) pdf.addPage('a4', 'landscape');
-
-                    // Título de la sección
                     var titleEl = sec.querySelector('.viz-title');
                     var title = titleEl ? titleEl.innerText : '';
-                    if (title) {
-                        pdf.setFontSize(10);
-                        pdf.setTextColor(0, 31, 84);
-                        pdf.text(title.substring(0, 80), 10, 7);
-                    }
-
-                    // Imagen ajustada a la página
+                    if (title) { pdf.setFontSize(10); pdf.setTextColor(0,31,84); pdf.text(title.substring(0,80), 10, 7); }
                     var imgData = canvas.toDataURL('image/png');
-                    var imgY   = title ? 10 : 5;
+                    var imgY = title ? 10 : 5;
                     var margin = 8;
-                    var imgW   = pageW - margin * 2;
-                    var imgH   = pageH - imgY - margin;
-
-                    // Mantener proporción
+                    var imgW = pageW - margin*2;
+                    var imgH = pageH - imgY - margin;
                     var canvasRatio = canvas.width / canvas.height;
-                    var pdfRatio    = imgW / imgH;
-                    if (canvasRatio < pdfRatio) {
-                        imgW = imgH * canvasRatio;
-                    } else {
-                        imgH = imgW / canvasRatio;
-                    }
-
+                    var pdfRatio = imgW / imgH;
+                    if (canvasRatio < pdfRatio) { imgW = imgH * canvasRatio; } else { imgH = imgW / canvasRatio; }
                     pdf.addImage(imgData, 'PNG', margin, imgY, imgW, imgH, '', 'FAST');
                     idx++;
                     capturarSiguiente();
                 }).catch(function(e) {
                     filtros.forEach(function(el){ el.style.visibility=''; });
-                    console.error('Error capturando sección ' + idx + ': ' + e);
+                    console.error('Error sección ' + idx + ': ' + e);
                     idx++;
                     capturarSiguiente();
                 });
             }
             capturarSiguiente();
         }
-
-        // Cargar html2canvas y jsPDF en cadena si no están disponibles
-        function cargarScript(url, callback) {
-            var s = document.createElement('script');
-            s.src = url;
-            s.onload = callback;
-            s.onerror = function(){ alert('Error cargando librería desde: ' + url); };
+        function cargarScript(url, cb) {
+            var s = document.createElement('script'); s.src = url; s.onload = cb;
+            s.onerror = function(){ alert('Error cargando: ' + url); };
             document.head.appendChild(s);
         }
-
-        var necesitaJspdf    = !window.jspdf && !window.jsPDF;
-        var necesitaH2canvas = !window.html2canvas;
-
-        if (necesitaJspdf && necesitaH2canvas) {
-            cargarScript(
-                'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-                function() {
-                    cargarScript(
-                        'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
-                        generarPDF
-                    );
-                }
-            );
-        } else if (necesitaJspdf) {
-            cargarScript(
-                'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-                generarPDF
-            );
-        } else if (necesitaH2canvas) {
-            cargarScript(
-                'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
-                generarPDF
-            );
-        } else {
-            generarPDF();
-        }
+        var noJspdf = !window.jspdf && !window.jsPDF;
+        var noH2c   = !window.html2canvas;
+        if (noJspdf && noH2c) {
+            cargarScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+                function(){ cargarScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', generarPDF); });
+        } else if (noJspdf) {
+            cargarScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', generarPDF);
+        } else if (noH2c) {
+            cargarScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', generarPDF);
+        } else { generarPDF(); }
         return '';
     }
     """,
