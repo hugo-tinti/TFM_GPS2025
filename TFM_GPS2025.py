@@ -19050,7 +19050,7 @@ def toggle_auto_refresh(switch_value):
 
 
 # ============================================================================
-# CALLBACK PARA EXPORTACIÓN GLOBAL DE VISUALIZACIONES (client-side, sin kaleido)
+# CALLBACK EXPORTACIÓN PNG - client-side, sin kaleido
 # ============================================================================
 app.clientside_callback(
     """
@@ -19058,7 +19058,7 @@ app.clientside_callback(
         if (!n_clicks || n_clicks === 0) { return ''; }
         var graphs = document.querySelectorAll('.js-plotly-plot');
         if (!graphs || graphs.length === 0) {
-            return 'No se encontraron gráficos. Navega a una VIZ con datos cargados y volvé a intentar.';
+            return 'No se encontraron gráficos. Navegá a una VIZ con datos y volvé a intentar.';
         }
         graphs.forEach(function(graph, idx) {
             try {
@@ -19070,7 +19070,7 @@ app.clientside_callback(
                 }, idx * 1800);
             } catch(e) { console.error('Error exportando VIZ ' + (idx+1) + ': ' + e); }
         });
-        return graphs.length + ' visualización(es) encontradas. Las descargas PNG comenzarán en segundos...';
+        return graphs.length + ' gráfico(s) encontrados. Las descargas PNG comenzarán en segundos...';
     }
     """,
     Output('area-exportacion-global', 'children'),
@@ -21818,52 +21818,147 @@ logger.info("=" * 80)
 logger.info("")
 
 # ============================================================================
-# CALLBACK PDF EXPORT - jsPDF + Plotly.toImage (solo VIZ con datos, sin cortes)
+# CALLBACK PDF EXPORT - html2canvas + jsPDF (gráficos Y tablas, sin cortes)
 # ============================================================================
 app.clientside_callback(
     """
     function(n_clicks) {
         if (!n_clicks || n_clicks === 0) return '';
-        var allGraphs = document.querySelectorAll('.js-plotly-plot');
-        var validGraphs = Array.from(allGraphs).filter(function(g) {
-            return g.data && g.data.length > 0 && g.data.some(function(t) {
-                return (t.x&&t.x.length>0)||(t.y&&t.y.length>0)||(t.z&&t.z.length>0)||
-                       (t.values&&t.values.length>0)||(t.lat&&t.lat.length>0);
-            });
-        });
-        if (validGraphs.length === 0) {
-            alert('No hay gráficos con datos. Cargá los datos y navegá a la VIZ primero.');
+
+        function sectionTieneContenido(sec) {
+            // Tiene gráfico Plotly con datos
+            var graph = sec.querySelector('.js-plotly-plot');
+            if (graph && graph.data && graph.data.length > 0) {
+                var conDatos = graph.data.some(function(t) {
+                    return (t.x&&t.x.length>0)||(t.y&&t.y.length>0)||
+                           (t.z&&t.z.length>0)||(t.values&&t.values.length>0)||
+                           (t.lat&&t.lat.length>0)||(t.r&&t.r.length>0);
+                });
+                if (conDatos) return true;
+            }
+            // Tiene tabla Dash con filas
+            var celdas = sec.querySelectorAll('.dash-cell');
+            if (celdas && celdas.length > 0) return true;
+            // Tiene tabla HTML normal
+            var filas = sec.querySelectorAll('tr');
+            if (filas && filas.length > 1) return true;
+            return false;
+        }
+
+        var todasSecs = document.querySelectorAll('.viz-section');
+        var secsValidas = Array.from(todasSecs).filter(sectionTieneContenido);
+
+        if (secsValidas.length === 0) {
+            alert('No hay secciones con datos. Cargá los datos y navegá a la VIZ primero.');
             return '';
         }
+
         function generarPDF() {
             var jsPDF = window.jspdf ? window.jspdf.jsPDF : (window.jsPDF || null);
             if (!jsPDF) { alert('Error: jsPDF no disponible.'); return; }
+
             var fecha = new Date().toISOString().slice(0,10);
-            var pdf = new jsPDF('landscape','mm','a4');
+            var pdf = new jsPDF('landscape', 'mm', 'a4');
             var pageW = pdf.internal.pageSize.getWidth();
             var pageH = pdf.internal.pageSize.getHeight();
-            var promises = validGraphs.map(function(g) {
-                return Plotly.toImage(g, {format:'png', width:1400, height:750, scale:1.5});
-            });
-            Promise.all(promises).then(function(images) {
-                images.forEach(function(imgData, idx) {
-                    if (idx > 0) pdf.addPage('a4','landscape');
-                    var sec = validGraphs[idx].closest('.viz-section');
-                    var title = sec ? (sec.querySelector('.viz-title')||{innerText:''}).innerText : '';
-                    if (title) { pdf.setFontSize(11); pdf.setTextColor(0,31,84); pdf.text(title,10,8); }
-                    var imgY = title ? 12 : 10;
-                    pdf.addImage(imgData,'PNG',10,imgY,pageW-20,pageH-imgY-10,'','FAST');
+
+            // Capturar secciones en secuencia (no en paralelo para evitar bugs de html2canvas)
+            var idx = 0;
+            function capturarSiguiente() {
+                if (idx >= secsValidas.length) {
+                    pdf.save('TFM_GPS_' + fecha + '.pdf');
+                    return;
+                }
+                var sec = secsValidas[idx];
+                // Ocultar botones de filtro dentro de la sección para un PDF más limpio
+                var filtros = sec.querySelectorAll('.btn-update, .filter-box button, .modebar');
+                filtros.forEach(function(el){ el.style.visibility='hidden'; });
+
+                html2canvas(sec, {
+                    scale: 1.5,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    allowTaint: true
+                }).then(function(canvas) {
+                    // Restaurar visibilidad
+                    filtros.forEach(function(el){ el.style.visibility=''; });
+
+                    if (idx > 0) pdf.addPage('a4', 'landscape');
+
+                    // Título de la sección
+                    var titleEl = sec.querySelector('.viz-title');
+                    var title = titleEl ? titleEl.innerText : '';
+                    if (title) {
+                        pdf.setFontSize(10);
+                        pdf.setTextColor(0, 31, 84);
+                        pdf.text(title.substring(0, 80), 10, 7);
+                    }
+
+                    // Imagen ajustada a la página
+                    var imgData = canvas.toDataURL('image/png');
+                    var imgY   = title ? 10 : 5;
+                    var margin = 8;
+                    var imgW   = pageW - margin * 2;
+                    var imgH   = pageH - imgY - margin;
+
+                    // Mantener proporción
+                    var canvasRatio = canvas.width / canvas.height;
+                    var pdfRatio    = imgW / imgH;
+                    if (canvasRatio < pdfRatio) {
+                        imgW = imgH * canvasRatio;
+                    } else {
+                        imgH = imgW / canvasRatio;
+                    }
+
+                    pdf.addImage(imgData, 'PNG', margin, imgY, imgW, imgH, '', 'FAST');
+                    idx++;
+                    capturarSiguiente();
+                }).catch(function(e) {
+                    filtros.forEach(function(el){ el.style.visibility=''; });
+                    console.error('Error capturando sección ' + idx + ': ' + e);
+                    idx++;
+                    capturarSiguiente();
                 });
-                pdf.save('TFM_GPS_'+fecha+'.pdf');
-            }).catch(function(e){ alert('Error al generar PDF: '+e); });
+            }
+            capturarSiguiente();
         }
-        if (!window.jspdf && !window.jsPDF) {
+
+        // Cargar html2canvas y jsPDF en cadena si no están disponibles
+        function cargarScript(url, callback) {
             var s = document.createElement('script');
-            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-            s.onload = generarPDF;
-            s.onerror = function(){ alert('Error cargando jsPDF. Revisá tu conexión.'); };
+            s.src = url;
+            s.onload = callback;
+            s.onerror = function(){ alert('Error cargando librería desde: ' + url); };
             document.head.appendChild(s);
-        } else { generarPDF(); }
+        }
+
+        var necesitaJspdf    = !window.jspdf && !window.jsPDF;
+        var necesitaH2canvas = !window.html2canvas;
+
+        if (necesitaJspdf && necesitaH2canvas) {
+            cargarScript(
+                'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+                function() {
+                    cargarScript(
+                        'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+                        generarPDF
+                    );
+                }
+            );
+        } else if (necesitaJspdf) {
+            cargarScript(
+                'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+                generarPDF
+            );
+        } else if (necesitaH2canvas) {
+            cargarScript(
+                'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+                generarPDF
+            );
+        } else {
+            generarPDF();
+        }
         return '';
     }
     """,
