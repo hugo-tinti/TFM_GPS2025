@@ -8696,6 +8696,36 @@ a, button, .btn-update, .sidebar-toggle {
 #toggle-pass-btn { background:none; border:none; cursor:pointer; font-size:18px; padding:0 10px; color:#94A3B8; transition:color 0.2s; }
 #toggle-pass-btn:hover { color:#3B82F6; }
 #portada-app-title { animation: cardFadeInUp 0.8s 0.15s cubic-bezier(0.22,1,0.36,1) both; }
+
+
+/* ===== EXPORTAR PDF: @media print ===== */
+@media print {
+    .sidebar, .sidebar-toggle, #toggle-tema, #btn-exportar-pdf,
+    #btn-exportar-global, .main-header, .filter-box, .btn-update,
+    .upload-section, .sidebar-header, .sidebar-content,
+    [id^="status-"], .modebar, .modebar-container,
+    .upload-box-premium, #auto-refresh-switch, .badge-premium,
+    #area-exportacion-global, .info-box, #portada-overlay,
+    .dcc-loading-parent > [role="status"], .dash-loading,
+    #panel-alertas-inteligentes { display: none !important; }
+
+    .main-content {
+        margin-left: 0 !important;
+        padding: 10px !important;
+        width: 100% !important;
+    }
+    .viz-section {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-bottom: 20px !important;
+        box-shadow: none !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+    .js-plotly-plot { page-break-inside: avoid; }
+    body { background: white !important; }
+    @page { margin: 1.5cm; size: A4 landscape; }
+}
+/* ===== FIN @media print ===== */
 """
 
 app.index_string = """<!DOCTYPE html>
@@ -9174,6 +9204,40 @@ app.layout = html.Div(id='main-container', style={'backgroundColor': '#FFFFFF', 
             'backdropFilter': 'blur(10px)'
         })
     ], style={'position': 'relative'}),
+
+    # === BOTÓN EXPORTAR PDF (flotante, bajo el toggle de tema) ===
+    html.Div(
+        html.Button(
+            [
+                html.I(className='fas fa-file-pdf', style={'marginRight': '8px'}),
+                html.Span('Exportar PDF')
+            ],
+            id='btn-exportar-pdf',
+            n_clicks=0,
+            style={
+                'position': 'fixed',
+                'top': '80px',
+                'right': '20px',
+                'zIndex': '10000',
+                'backgroundColor': '#DC2626',
+                'color': 'white',
+                'border': 'none',
+                'borderRadius': '12px',
+                'padding': '12px 20px',
+                'fontSize': '14px',
+                'fontWeight': '600',
+                'fontFamily': 'Inter, sans-serif',
+                'cursor': 'pointer',
+                'boxShadow': '0 4px 12px rgba(220, 38, 38, 0.3)',
+                'display': 'flex',
+                'alignItems': 'center',
+                'transition': 'all 0.3s ease',
+                'backdropFilter': 'blur(10px)'
+            }
+        ),
+        style={'position': 'relative'}
+    ),
+    html.Div(id='_pdf-dummy-output', style={'display': 'none'}),
 
     dcc.Store(id='store-gps'),
     dcc.Store(id='store-pos'),
@@ -19032,10 +19096,6 @@ def toggle_auto_refresh(switch_value):
 
 
 # ============================================================================
-# CALLBACK PARA EXPORTACIÓN GLOBAL DE VISUALIZACIONES
-# ============================================================================
-
-# ============================================================================
 # CALLBACK PARA EXPORTACIÓN GLOBAL DE VISUALIZACIONES (client-side, sin kaleido)
 # ============================================================================
 app.clientside_callback(
@@ -19048,7 +19108,6 @@ app.clientside_callback(
         if (!graphs || graphs.length === 0) {
             return 'No se encontraron gráficos. Navega a una VIZ con datos cargados y volvé a intentar.';
         }
-        var count = 0;
         graphs.forEach(function(graph, idx) {
             try {
                 setTimeout(function() {
@@ -19060,7 +19119,6 @@ app.clientside_callback(
                         filename: 'TFM_GPS_VIZ_' + (idx + 1)
                     });
                 }, idx * 1800);
-                count++;
             } catch(e) {
                 console.error('Error exportando VIZ ' + (idx+1) + ': ' + e);
             }
@@ -21811,6 +21869,25 @@ logger.info("       prevent_initial_call=True")
 logger.info("   )")
 logger.info("=" * 80)
 logger.info("")
+
+
+
+# ============================================================================
+# CALLBACK PDF EXPORT - client-side con window.print()
+# ============================================================================
+app.clientside_callback(
+    """
+    function(n_clicks) {
+        if (!n_clicks || n_clicks === 0) return '';
+        setTimeout(function() { window.print(); }, 300);
+        return '';
+    }
+    """,
+    Output('_pdf-dummy-output', 'children'),
+    Input('btn-exportar-pdf', 'n_clicks'),
+    prevent_initial_call=True
+)
+
 
 # ==============================================================================
 # FIN DEL SISTEMA DASH PATCH
