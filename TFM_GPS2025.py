@@ -1,3 +1,4 @@
+import os
 from groq import Groq
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 #!/usr/bin/env python3
@@ -9174,7 +9175,6 @@ app.layout = html.Div(id='main-container', style={'backgroundColor': '#FFFFFF', 
         })
     ], style={'position': 'relative'}),
 
-    # === BOTÓN EXPORTAR PDF (flotante, bajo el toggle de tema) ===
     html.Div(
         html.Button(
             [html.I(className='fas fa-file-pdf', style={'marginRight': '8px'}),
@@ -9185,12 +9185,11 @@ app.layout = html.Div(id='main-container', style={'backgroundColor': '#FFFFFF', 
                 'backgroundColor': '#DC2626', 'color': 'white', 'border': 'none',
                 'borderRadius': '12px', 'padding': '12px 20px', 'fontSize': '14px',
                 'fontWeight': '600', 'fontFamily': 'Inter, sans-serif', 'cursor': 'pointer',
-                'boxShadow': '0 4px 12px rgba(220, 38, 38, 0.3)', 'display': 'flex',
+                'boxShadow': '0 4px 12px rgba(220,38,38,0.3)', 'display': 'flex',
                 'alignItems': 'center', 'transition': 'all 0.3s ease',
                 'backdropFilter': 'blur(10px)'
             }
-        ),
-        style={'position': 'relative'}
+        ), style={'position': 'relative'}
     ),
     html.Div(id='_pdf-dummy-output', style={'display': 'none'}),
 
@@ -21819,92 +21818,52 @@ logger.info("=" * 80)
 logger.info("")
 
 # ============================================================================
-# CALLBACK PDF EXPORT - jsPDF con Plotly.toImage (solo VIZ graficadas, sin cortes)
+# CALLBACK PDF EXPORT - jsPDF + Plotly.toImage (solo VIZ con datos, sin cortes)
 # ============================================================================
 app.clientside_callback(
     """
     function(n_clicks) {
         if (!n_clicks || n_clicks === 0) return '';
-
-        // Detectar solo graficos con datos reales
         var allGraphs = document.querySelectorAll('.js-plotly-plot');
         var validGraphs = Array.from(allGraphs).filter(function(g) {
-            return g.data && g.data.length > 0 && g.data.some(function(trace) {
-                var hasX  = trace.x  && trace.x.length  > 0;
-                var hasY  = trace.y  && trace.y.length  > 0;
-                var hasZ  = trace.z  && trace.z.length  > 0;
-                var hasV  = trace.values && trace.values.length > 0;
-                var hasLat = trace.lat && trace.lat.length > 0;
-                return hasX || hasY || hasZ || hasV || hasLat;
+            return g.data && g.data.length > 0 && g.data.some(function(t) {
+                return (t.x&&t.x.length>0)||(t.y&&t.y.length>0)||(t.z&&t.z.length>0)||
+                       (t.values&&t.values.length>0)||(t.lat&&t.lat.length>0);
             });
         });
-
         if (validGraphs.length === 0) {
-            document.getElementById('_pdf-dummy-output').innerText =
-                'No hay gráficos con datos. Cargá los datos y navegá a la VIZ primero.';
-            return 'Sin gráficos';
+            alert('No hay gráficos con datos. Cargá los datos y navegá a la VIZ primero.');
+            return '';
         }
-
-        // Actualizar estado
-        var statusEl = document.getElementById('_pdf-dummy-output');
-        if (statusEl) statusEl.innerText = 'Generando PDF con ' + validGraphs.length + ' gráfico(s)...';
-
-        // Cargar jsPDF dinámicamente si no está disponible
         function generarPDF() {
-            var jsPDF = window.jspdf ? window.jspdf.jsPDF : (window.jsPDF ? window.jsPDF : null);
-            if (!jsPDF) {
-                if (statusEl) statusEl.innerText = 'Error: jsPDF no disponible.';
-                return;
-            }
-            var fecha = new Date().toISOString().slice(0, 10);
-            var pdf = new jsPDF('landscape', 'mm', 'a4');
+            var jsPDF = window.jspdf ? window.jspdf.jsPDF : (window.jsPDF || null);
+            if (!jsPDF) { alert('Error: jsPDF no disponible.'); return; }
+            var fecha = new Date().toISOString().slice(0,10);
+            var pdf = new jsPDF('landscape','mm','a4');
             var pageW = pdf.internal.pageSize.getWidth();
             var pageH = pdf.internal.pageSize.getHeight();
-
             var promises = validGraphs.map(function(g) {
-                return Plotly.toImage(g, {format: 'png', width: 1400, height: 750, scale: 1.5});
+                return Plotly.toImage(g, {format:'png', width:1400, height:750, scale:1.5});
             });
-
             Promise.all(promises).then(function(images) {
                 images.forEach(function(imgData, idx) {
-                    if (idx > 0) { pdf.addPage('a4', 'landscape'); }
-                    // Titulo de la VIZ si existe
-                    var titleEl = validGraphs[idx].closest('.viz-section');
-                    var titleText = '';
-                    if (titleEl) {
-                        var h = titleEl.querySelector('.viz-title');
-                        if (h) titleText = h.innerText;
-                    }
-                    if (titleText) {
-                        pdf.setFontSize(11);
-                        pdf.setTextColor(0, 31, 84);
-                        pdf.text(titleText, 10, 8);
-                    }
-                    // Imagen ocupa toda la página (con margen)
-                    var margin = 10;
-                    var imgY = titleText ? 12 : margin;
-                    var imgH = pageH - imgY - margin;
-                    pdf.addImage(imgData, 'PNG', margin, imgY, pageW - margin * 2, imgH, '', 'FAST');
+                    if (idx > 0) pdf.addPage('a4','landscape');
+                    var sec = validGraphs[idx].closest('.viz-section');
+                    var title = sec ? (sec.querySelector('.viz-title')||{innerText:''}).innerText : '';
+                    if (title) { pdf.setFontSize(11); pdf.setTextColor(0,31,84); pdf.text(title,10,8); }
+                    var imgY = title ? 12 : 10;
+                    pdf.addImage(imgData,'PNG',10,imgY,pageW-20,pageH-imgY-10,'','FAST');
                 });
-                pdf.save('TFM_GPS_' + fecha + '.pdf');
-                if (statusEl) statusEl.innerText = '';
-            }).catch(function(err) {
-                if (statusEl) statusEl.innerText = 'Error al generar PDF: ' + err;
-                console.error('Error PDF:', err);
-            });
+                pdf.save('TFM_GPS_'+fecha+'.pdf');
+            }).catch(function(e){ alert('Error al generar PDF: '+e); });
         }
-
         if (!window.jspdf && !window.jsPDF) {
-            var script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-            script.onload = generarPDF;
-            script.onerror = function() {
-                if (statusEl) statusEl.innerText = 'Error al cargar jsPDF. Revisá tu conexión.';
-            };
-            document.head.appendChild(script);
-        } else {
-            generarPDF();
-        }
+            var s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+            s.onload = generarPDF;
+            s.onerror = function(){ alert('Error cargando jsPDF. Revisá tu conexión.'); };
+            document.head.appendChild(s);
+        } else { generarPDF(); }
         return '';
     }
     """,
