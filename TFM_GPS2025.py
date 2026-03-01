@@ -3053,9 +3053,18 @@ class SistemaExportacion:
         Returns:
             Bytes del PNG generado
         """
+        import concurrent.futures
+        def _generar_png():
+            return fig.to_image(format="png", width=1920, height=1080, scale=2)
         try:
-            img_bytes = fig.to_image(format="png", width=1920, height=1080, scale=2)
-            return img_bytes
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(_generar_png)
+                try:
+                    img_bytes = future.result(timeout=45)
+                    return img_bytes
+                except concurrent.futures.TimeoutError:
+                    logger.error(f"Timeout al exportar PNG: {nombre_archivo}")
+                    return None
         except Exception as e:
             logger.error(f"Error al exportar PNG: {e}")
             return None
@@ -3270,9 +3279,18 @@ class SistemaExportacion:
         Returns:
             Bytes del PNG generado (1920x1080, scale 2)
         """
+        import concurrent.futures
+        def _generar_png():
+            return fig.to_image(format="png", width=1920, height=1080, scale=2)
         try:
-            img_bytes = fig.to_image(format="png", width=1920, height=1080, scale=2)
-            return img_bytes
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(_generar_png)
+                try:
+                    img_bytes = future.result(timeout=45)
+                    return img_bytes
+                except concurrent.futures.TimeoutError:
+                    logger.error(f"Timeout al exportar PNG: {nombre_archivo}")
+                    return None
         except Exception as e:
             logger.error(f"❌ Error al exportar PNG: {e}")
             return None
@@ -21895,7 +21913,6 @@ logger.info("")
 # ==============================================================================
 # FIN DEL SISTEMA DASH PATCH
 # ==============================================================================
-
 
 
 
