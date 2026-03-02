@@ -9307,51 +9307,7 @@ app.layout = html.Div(id='main-container', style={'backgroundColor': '#FFFFFF', 
             ], className='header-badges')
         ], className='main-header'),
         
-        # ====================================================================
-        # BOTÓN DE EXPORTACIÓN GLOBAL
-        # ====================================================================
-        html.Div([
-            html.Div([
-                html.I(className="fas fa-download", style={'fontSize': '32px', 'color': '#10B981', 'marginBottom': '12px'}),
-                html.H3("📥 Exportar Reportes", style={
-                    'fontSize': '20px',
-                    'fontWeight': '900',
-                    'color': '#001F54',
-                    'marginBottom': '8px',
-                    'marginTop': '0'
-                }),
-                html.P("Exporta las visualizaciones actuales en formato PNG de alta calidad (1920x1080)", style={
-                    'fontSize': '14px',
-                    'color': '#64748B',
-                    'marginBottom': '20px',
-                    'marginTop': '0'
-                }),
-            ], style={'textAlign': 'center'}),
 
-            html.Button(
-                [html.I(className="fas fa-file-export", style={'marginRight': '10px'}), 
-                 "EXPORTAR VISUALIZACIONES"],
-                id='btn-exportar-global',
-                n_clicks=0,
-                style={
-                    'backgroundColor': '#10B981',
-                    'color': 'white',
-                    'padding': '16px 40px',
-                    'borderRadius': '10px',
-                    'border': 'none',
-                    'fontSize': '16px',
-                    'fontWeight': 'bold',
-                    'cursor': 'pointer',
-                    'boxShadow': '0 4px 6px rgba(16,185,129,0.3)',
-                    'width': '100%',
-                    'maxWidth': '450px',
-                    'transition': 'all 0.3s',
-                    'textTransform': 'uppercase',
-                    'letterSpacing': '0.5px'
-                }
-            ),
-
-            html.Div(id='area-exportacion-global', style={'marginTop': '20px'}),
 
             # ====================================================================
             # ✅ NUEVO DASH 3.4.0 (2026) - CLIPBOARD PERSONALIZABLE
@@ -19122,34 +19078,7 @@ def toggle_auto_refresh(switch_value):
 
 
 
-# ============================================================================
-# CALLBACK EXPORTACIÓN PNG - client-side, sin kaleido
-# ============================================================================
-app.clientside_callback(
-    """
-    function(n_clicks) {
-        if (!n_clicks || n_clicks === 0) { return ''; }
-        var graphs = document.querySelectorAll('.js-plotly-plot');
-        if (!graphs || graphs.length === 0) {
-            return 'No se encontraron gráficos. Navegá a una VIZ con datos y volvé a intentar.';
-        }
-        graphs.forEach(function(graph, idx) {
-            try {
-                setTimeout(function() {
-                    Plotly.downloadImage(graph, {
-                        format: 'png', width: 1920, height: 1080, scale: 2,
-                        filename: 'TFM_GPS_VIZ_' + (idx + 1)
-                    });
-                }, idx * 1800);
-            } catch(e) { console.error('Error exportando VIZ ' + (idx+1) + ': ' + e); }
-        });
-        return graphs.length + ' gráfico(s) encontrados. Las descargas PNG comenzarán en segundos...';
-    }
-    """,
-    Output('area-exportacion-global', 'children'),
-    Input('btn-exportar-global', 'n_clicks'),
-    prevent_initial_call=True
-)
+
 
 
 @app.callback(
@@ -21195,9 +21124,13 @@ def analisis_ia_v23_groq(n_clicks, gps_data, atleta, variable, fi, ff, va, vc):
         # Plantel score
         try:
             rp = calcular_tabla_plantel(df, variable, va, vc)
-            if rp is not None and not rp.empty and "score" in rp.columns:
+            # rp es una lista de dicts (no un DataFrame)
+            if rp and len(rp) > 0 and isinstance(rp[0], dict) and "score" in rp[0]:
+                scores = [r.get("score", 0) for r in rp]
                 plantel_txt = (f"{len(rp)} jugadores — Score medio: "
-                               f"{round(rp['score'].mean(),1)} | Max: {round(rp['score'].max(),1)}")
+                               f"{round(sum(scores)/len(scores), 1)} | Max: {round(max(scores), 1)}")
+            elif rp and len(rp) > 0:
+                plantel_txt = f"{len(rp)} jugadores en el plantel."
             else:
                 plantel_txt = "No disponible."
         except Exception:
