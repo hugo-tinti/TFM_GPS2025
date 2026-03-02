@@ -9404,15 +9404,6 @@ app.layout = html.Div(id='main-container', style={'backgroundColor': '#FFFFFF', 
                 'boxShadow': '0 4px 6px rgba(0,0,0,0.08)'
             }),
 
-        ], style={
-            'padding': '30px',
-            'backgroundColor': '#F0FDF4',
-            'borderRadius': '16px',
-            'marginBottom': '40px',
-            'border': '3px solid #10B981',
-            'textAlign': 'center',
-            'boxShadow': '0 4px 6px rgba(0,0,0,0.08)'
-        }),
 
 dcc.Loading(
                 type="circle",
