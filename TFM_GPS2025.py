@@ -424,7 +424,7 @@ def crear_tabla_fwf_mejorada(df_fwf: pd.DataFrame, variable: str) -> dash_table.
             page_action='none',
         data=df_m.to_dict('records'),
         columns=[{'name':c,'id':c} for c in df_m.columns],
-        style_table={'overflowX':'auto','maxHeight':'none','border':'2px solid #E5E7EB','borderRadius':'8px'},
+        style_table={'overflowX':'auto','border':'2px solid #E5E7EB','borderRadius':'8px'},
         style_cell={'textAlign':'center','padding':'10px','fontSize':11},
         style_header={'backgroundColor':'#111827','color':'white','fontWeight':900,'fontSize':12},
         style_data_conditional=[
@@ -6075,7 +6075,7 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
             page_action='none',
                 data=resumen.reset_index().to_dict('records'),
                 columns=[{'name': i, 'id': i} for i in resumen.reset_index().columns],
-                style_table={'overflowX': 'auto', 'maxHeight': 'none'},
+                style_table={'overflowX': 'auto'},
                 style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '14px', 'fontWeight': '600'},
                 style_header={'backgroundColor': '#001F54', 'color': 'white', 'fontWeight': 'bold', 'fontSize': '15px'}
             )
@@ -6119,7 +6119,7 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
                         {'name': 'Nivel', 'id': 'nivel_riesgo'},
                         {'name': 'Driver', 'id': 'driver_principal'}
                     ],
-                    style_table={'overflowX': 'auto', 'maxHeight': 'none'},
+                    style_table={'overflowX': 'auto'},
                     style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '14px', 'fontWeight': '600'},
                     style_header={'backgroundColor': '#DC2626', 'color': 'white', 'fontWeight': 'bold'},
                     style_data_conditional=[{
@@ -6169,7 +6169,7 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
             page_action='none',
                 data=df_anom_tabla.to_dict('records'),
                 columns=[{'name': i, 'id': i} for i in df_anom_tabla.columns],
-                style_table={'overflowX': 'auto', 'maxHeight': 'none'},
+                style_table={'overflowX': 'auto'},
                 style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '14px', 'fontWeight': '600'},
                 style_header={'backgroundColor': '#7C3AED', 'color': 'white', 'fontWeight': 'bold'},
                 style_data={'backgroundColor': '#f3e8ff'}
@@ -7117,7 +7117,7 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
             page_action='none',
                 data=resumen.reset_index().to_dict('records'),
                 columns=[{'name': i, 'id': i} for i in resumen.reset_index().columns],
-                style_table={'overflowX': 'auto', 'maxHeight': 'none'},
+                style_table={'overflowX': 'auto'},
                 style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '14px', 'fontWeight': '600'},
                 style_header={'backgroundColor': '#001F54', 'color': 'white', 'fontWeight': 'bold', 'fontSize': '15px'}
             )
@@ -7158,7 +7158,7 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
                             {'name': 'ICI', 'id': 'ICI'},
                             {'name': 'Prob. Riesgo', 'id': 'prob_riesgo'},
                             {'name': 'Nivel', 'id': 'nivel_riesgo'}],
-                    style_table={'overflowX': 'auto', 'maxHeight': 'none'},
+                    style_table={'overflowX': 'auto'},
                     style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '14px', 'fontWeight': '600'},
                     style_header={'backgroundColor': '#DC2626', 'color': 'white', 'fontWeight': 'bold'},
                     style_data_conditional=[
@@ -7207,7 +7207,7 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
             page_action='none',
                 data=df_anom_tabla.to_dict('records'),
                 columns=[{'name': i, 'id': i} for i in df_anom_tabla.columns],
-                style_table={'overflowX': 'auto', 'maxHeight': 'none'},
+                style_table={'overflowX': 'auto'},
                 style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '14px', 'fontWeight': '600'},
                 style_header={'backgroundColor': '#7C3AED', 'color': 'white', 'fontWeight': 'bold'},
                 style_data={'backgroundColor': '#f3e8ff'}
@@ -12162,7 +12162,7 @@ def crear_tabla_alertas_extendidas_v22(resultados_ext, df_final):
             {'name': 'Vmax', 'id': 'Vmax'}, {'name': 'Partidos', 'id': 'Partidos'},
             {'name': 'MA4', 'id': 'MA4'}, {'name': '🚨 TOTAL', 'id': 'Total'}
         ],
-        style_table={'overflowX': 'auto', 'maxHeight': 'none'},
+        style_table={'overflowX': 'auto'},
         style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '13px'},
         style_header={'backgroundColor': '#10B981', 'color': 'white', 'fontWeight': 'bold'},
         style_data_conditional=[
@@ -12689,7 +12689,7 @@ def crear_vista_jugador_individual_v22(df_final, df_alertas_ext, atleta_seleccio
     if len(alertas_jugador) > 0:
         total_alertas = alertas_jugador['Cantidad'].sum()
         tabla_alertas_jugador = dash_table.DataTable(
-            page_action='none',data=alertas_jugador.to_dict('records'), columns=[{'name': c, 'id': c} for c in alertas_jugador.columns], style_table={'overflowX': 'auto', 'maxHeight': 'none'}, style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '13px'}, style_header={'backgroundColor': '#7C3AED', 'color': 'white', 'fontWeight': 'bold'}, page_size=10)
+            page_action='none',data=alertas_jugador.to_dict('records'), columns=[{'name': c, 'id': c} for c in alertas_jugador.columns], style_table={'overflowX': 'auto'}, style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '13px'}, style_header={'backgroundColor': '#7C3AED', 'color': 'white', 'fontWeight': 'bold'}, page_size=10)
         explicacion_individual = html.Div([
             html.P([
                 html.Strong(f"Total de alertas: {total_alertas}"), 
@@ -12802,7 +12802,7 @@ def update_v22(n, gps_data, pos_data, fecha_inicio, fecha_fin, posicion, umbral)
                 {'name': 'Riesgo', 'id': 'riesgo_lesion'}, 
                 {'name': 'Prob %', 'id': 'prob_riesgo_lesion'}
             ],
-            style_table={'overflowX': 'auto', 'maxHeight': 'none'},
+            style_table={'overflowX': 'auto'},
             style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '14px'},
             style_header={'backgroundColor': '#7C3AED', 'color': 'white', 'fontWeight': 'bold'},
             style_data_conditional=[
@@ -13904,7 +13904,7 @@ def updatev3(n, data, variable, desde, hasta, agregacion):
             page_action='none',
         data=tabla_df.to_dict('records'),
         columns=[{'name': col, 'id': col} for col in tabla_df.columns],
-        style_table={'overflowX': 'auto', 'maxHeight': 'none', 'marginTop': '24px'},
+        style_table={'overflowX': 'auto', 'marginTop': '24px'},
         style_cell={
             'textAlign': 'left',
             'padding': '12px',
@@ -14979,7 +14979,7 @@ def update_v6(n, data, atleta, metrica, fecha_desde, fecha_hasta):
             columns=[{'name':'Fecha','id':'Fecha'},{'name':'Carga Diaria','id':'Carga Diaria'},
                     {'name':'EWMA Aguda (7d)','id':'EWMA Aguda (7d)'},{'name':'EWMA Crónica (28d)','id':'EWMA Crónica (28d)'},
                     {'name':'ACR Ratio','id':'ACR Ratio'},{'name':'Estado','id':'Estado'}],
-            style_table={'overflowX':'auto', 'maxHeight':'none'},
+            style_table={'overflowX':'auto'},
             style_cell={'textAlign':'center','padding':'14px 12px','fontSize':'14px','fontWeight':'600',
                        'color':'#001F54','fontFamily':'Inter, sans-serif'},
             style_header={'backgroundColor':'#001F54','color':'white','fontWeight':'800','fontSize':'13px',
@@ -15660,7 +15660,7 @@ def v9_generate_report(n, gps_data, pos_data, fecha_inicio, fecha_fin, v1, v2, v
             page_action='none',
         data=tabla_data,
         columns=columnas_dt,
-        style_table={'overflowX': 'auto', 'maxHeight': 'none', 'minWidth': '100%'},
+        style_table={'overflowX': 'auto', 'minWidth': '100%'},
         style_cell={
             'textAlign': 'center',
             'padding': '14px 8px',
@@ -18248,7 +18248,7 @@ def generar_analisis_coherencia(df_coherencia, umbral, posicion, atleta, titulo_
             {'name': 'Coherencia %', 'id': 'Coherencia %'},
             {'name': 'Estado', 'id': 'Estado'}
         ],
-        style_table={'overflowX': 'auto', 'maxHeight': 'none', 'minWidth': '100%'},
+        style_table={'overflowX': 'auto', 'minWidth': '100%'},
         style_cell={
             'textAlign': 'center',
             'padding': '14px 12px',
@@ -21847,136 +21847,103 @@ logger.info("")
 app.clientside_callback(
     """
     function(n_clicks) {
-        if (!n_clicks || n_clicks === 0) return '';
+        if (!n_clicks || n_clicks === 0) { return ''; }
 
-        function sectionTieneContenido(sec) {
-            var graph = sec.querySelector('.js-plotly-plot');
-            if (graph && graph.data && graph.data.length > 0) {
-                var conDatos = graph.data.some(function(t) {
-                    return (t.x&&t.x.length>0)||(t.y&&t.y.length>0)||
-                           (t.z&&t.z.length>0)||(t.values&&t.values.length>0)||
-                           (t.lat&&t.lat.length>0)||(t.r&&t.r.length>0);
-                });
-                if (conDatos) return true;
-            }
-            var celdas = sec.querySelectorAll('.dash-cell');
-            if (celdas && celdas.length > 0) return true;
-            var filas = sec.querySelectorAll('tr');
-            if (filas && filas.length > 1) return true;
-            return false;
-        }
+        var secs = Array.from(document.querySelectorAll('.viz-section')).filter(function(s) {
+            var g = s.querySelector('.js-plotly-plot');
+            return g && g.data && g.data.some(function(t) {
+                return (t.x && t.x.length) || (t.y && t.y.length) ||
+                       (t.values && t.values.length) || (t.z && t.z.length);
+            });
+        });
 
-        var todasSecs = document.querySelectorAll('.viz-section');
-        var secsValidas = Array.from(todasSecs).filter(sectionTieneContenido);
-        if (secsValidas.length === 0) {
-            alert('No hay secciones con datos. Carg\u00e1 los datos y naveg\u00e1 a la VIZ primero.');
+        if (secs.length === 0) {
+            alert('Sin datos. Navega a una VIZ primero.');
             return '';
         }
 
-        function generarPDF() {
-            var jsPDF = window.jspdf ? window.jspdf.jsPDF : (window.jsPDF || null);
-            if (!jsPDF) { alert('Error: jsPDF no disponible.'); return; }
-            var fecha = new Date().toISOString().slice(0,10);
-            var pdf = new jsPDF('landscape', 'mm', 'a4');
-            var pageW = pdf.internal.pageSize.getWidth();
-            var pageH = pdf.internal.pageSize.getHeight();
-            var idx = 0;
-
-            function capturarSiguiente() {
-                if (idx >= secsValidas.length) { pdf.save('TFM_GPS_' + fecha + '.pdf'); return; }
-                var sec = secsValidas[idx];
-                var filtros = sec.querySelectorAll('.btn-update, .filter-box button, .modebar');
-                filtros.forEach(function(el){ el.style.visibility='hidden'; });
-
-                // Expandir contenedores de tablas para captura completa
-                var tablaContainers = sec.querySelectorAll(
-                    '.dash-table-container, .dash-spreadsheet-container, .dash-freeze-left'
-                );
-                var origTablaStyles = [];
-                tablaContainers.forEach(function(t) {
-                    origTablaStyles.push({ el: t, maxHeight: t.style.maxHeight,
-                                           overflow: t.style.overflow, height: t.style.height });
-                    t.style.maxHeight = 'none';
-                    t.style.overflow  = 'visible';
-                    t.style.height    = 'auto';
-                });
-
-                console.log('📸 Capturando sección ' + (idx+1) + '/' + secsValidas.length);
-
-                // Scroll a la sección para asegurar que esté visible
-                sec.scrollIntoView({behavior: 'instant', block: 'start'});
-
-                // Esperar 100ms para que se renderice
-                setTimeout(function() {
-                    html2canvas(sec, {
-                        scale: 0.8,
-                        useCORS: true,
-                        backgroundColor: '#ffffff',
-                        logging: false,
-                        allowTaint: true
-                    })
-                .then(function(canvas) {
-                    console.log('✅ Canvas creado ' + (idx+1) + ' - ' + canvas.width + 'x' + canvas.height);
-                    // Restaurar estilos originales de tablas
-                    origTablaStyles.forEach(function(s) {
-                        s.el.style.maxHeight = s.maxHeight;
-                        s.el.style.overflow  = s.overflow;
-                        s.el.style.height    = s.height;
-                    });
-                    filtros.forEach(function(el){ el.style.visibility=''; });
-
-                    if (idx > 0) pdf.addPage('a4', 'landscape');
-                    var titleEl = sec.querySelector('.viz-title');
-                    var title = titleEl ? titleEl.innerText : '';
-                    if (title) { pdf.setFontSize(10); pdf.setTextColor(0,31,84); pdf.text(title.substring(0,80), 10, 7); }
-
-                    // JPEG 78% en lugar de PNG: reduce peso ~70% con calidad visual aceptable
-                    console.log('🖼️ Convirtiendo a JPEG...');
-                    var imgData = canvas.toDataURL('image/jpeg', 0.6);
-                    var imgY = title ? 10 : 5;
-                    var margin = 8;
-                    var imgW = pageW - margin*2;
-                    var imgH = pageH - imgY - margin;
-                    var canvasRatio = canvas.width / canvas.height;
-                    var pdfRatio = imgW / imgH;
-                    if (canvasRatio < pdfRatio) { imgW = imgH * canvasRatio; } else { imgH = imgW / canvasRatio; }
-                    pdf.addImage(imgData, 'JPEG', margin, imgY, imgW, imgH, '', 'FAST');
-                    console.log('✅ Página ' + (idx+1) + ' agregada al PDF');
-                    idx++;
-                    // Pausa 300ms: evita congelar el navegador entre capturas
-                    console.log('⏳ Esperando 300ms antes de siguiente captura...');
-                    setTimeout(capturarSiguiente, 100);
-
-                }).catch(function(e) {
-                    console.error('❌ Error en sección ' + (idx+1) + ':', e);
-                    origTablaStyles.forEach(function(s) {
-                        s.el.style.maxHeight = s.maxHeight;
-                        s.el.style.overflow  = s.overflow;
-                        s.el.style.height    = s.height;
-                    });
-                    filtros.forEach(function(el){ el.style.visibility=''; });
-                    idx++;
-                    setTimeout(capturarSiguiente, 100);
-                });
-            }
-            capturarSiguiente();
-        }
-
-        function cargarScript(url, cb) {
-            var s = document.createElement('script'); s.src = url; s.onload = cb;
-            s.onerror = function(){ alert('Error cargando: ' + url); };
+        function cargar(url, cb) {
+            if (document.querySelector('script[src="' + url + '"]')) { cb(); return; }
+            var s = document.createElement('script');
+            s.src = url; s.onload = cb;
+            s.onerror = function() { alert('No se pudo cargar: ' + url); };
             document.head.appendChild(s);
         }
-        var noJspdf = !window.jspdf && !window.jsPDF;
-        var noH2c   = !window.html2canvas;
-        if (noJspdf && noH2c) {
-            cargarScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-                function(){ cargarScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', generarPDF); });
-        } else if (noJspdf) {
-            cargarScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', generarPDF);
-        } else if (noH2c) {
-            cargarScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', generarPDF);
-        } else { generarPDF(); }
+
+        function exportar() {
+            var PDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
+            if (!PDF) { alert('jsPDF no disponible'); return; }
+
+            var pdf  = new PDF('landscape', 'mm', 'a4');
+            var pw   = pdf.internal.pageSize.getWidth();
+            var ph   = pdf.internal.pageSize.getHeight();
+            var idx  = 0;
+
+            function siguiente() {
+                if (idx >= secs.length) {
+                    var d = new Date().toISOString().slice(0,10);
+                    pdf.save('TFM_GPS_' + d + '.pdf');
+                    return;
+                }
+
+                var sec  = secs[idx];
+                var btns = sec.querySelectorAll('.modebar, .btn-update');
+                btns.forEach(function(b) { b.style.display = 'none'; });
+                sec.scrollIntoView({ behavior: 'instant', block: 'start' });
+
+                setTimeout(function() {
+                    html2canvas(sec, {
+                        scale: 0.75,
+                        backgroundColor: '#ffffff',
+                        logging: false,
+                        useCORS: true
+                    }).then(function(canvas) {
+                        btns.forEach(function(b) { b.style.display = ''; });
+
+                        if (idx > 0) { pdf.addPage('a4', 'landscape'); }
+
+                        var t = sec.querySelector('.viz-title');
+                        if (t) {
+                            pdf.setFontSize(9);
+                            pdf.setTextColor(0, 31, 84);
+                            pdf.text(t.innerText.substring(0, 70), 10, 7);
+                        }
+
+                        var img    = canvas.toDataURL('image/jpeg', 0.55);
+                        var m      = 10;
+                        var iw     = pw - m * 2;
+                        var ih     = ph - 15;
+                        var ratio  = canvas.width / canvas.height;
+                        if (ratio > iw / ih) { ih = iw / ratio; }
+                        else { iw = ih * ratio; }
+
+                        pdf.addImage(img, 'JPEG', m, 12, iw, ih);
+                        idx++;
+                        setTimeout(siguiente, 150);
+
+                    }).catch(function(e) {
+                        btns.forEach(function(b) { b.style.display = ''; });
+                        console.error('Error en seccion ' + idx, e);
+                        idx++;
+                        setTimeout(siguiente, 150);
+                    });
+                }, 250);
+            }
+
+            siguiente();
+        }
+
+        var H = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        var J = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+
+        if (!window.jspdf && !window.jsPDF) {
+            cargar(J, function() { cargar(H, exportar); });
+        } else if (!window.html2canvas) {
+            cargar(H, exportar);
+        } else {
+            exportar();
+        }
+
         return '';
     }
     """,
