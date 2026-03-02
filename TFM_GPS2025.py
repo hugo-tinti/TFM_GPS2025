@@ -4,6 +4,43 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+
+
+# ============================================================================
+# BOTÓN EXPORTAR PDF POR VISUALIZACIÓN
+# ============================================================================
+
+from dash import html
+
+
+def boton_exportar_pdf(viz_num: int):
+    """Crea un botón flotante 'exportar pdf' para una VIZ concreta."""
+    return html.Button(
+        [
+            html.I(className="fas fa-file-pdf", style={"marginRight": "6px"}),
+            "exportar pdf",
+        ],
+        id=f"btn-export-pdf-v{viz_num}",
+        n_clicks=0,
+        style={
+            "position": "absolute",
+            "top": "10px",
+            "right": "12px",
+            "zIndex": 20,
+            "backgroundColor": "#DC2626",
+            "color": "white",
+            "border": "none",
+            "borderRadius": "6px",
+            "padding": "6px 12px",
+            "fontSize": "11px",
+            "fontWeight": "600",
+            "cursor": "pointer",
+            "boxShadow": "0 2px 6px rgba(0,0,0,0.25)",
+        },
+        title="Exportar PDF de esta visualización",
+    )
+
+
 # ============================================================================
 # 🥈 MEJORA TOP 2 - LAZY LOADING IMPLEMENTADO (31 ENERO 2026)
 # ============================================================================
@@ -83,7 +120,7 @@ from dotenv import load_dotenv
 
 load_dotenv()  # Carga variables desde .env (si existe)
 
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")  # configurada via variables de entorno en Render
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 GROQ_URL  = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
@@ -2182,8 +2219,7 @@ def layout_viz23_fwf(df_gps: pd.DataFrame = None) -> html.Div:
             dcc.Loading(
                 type="circle",
                 color="#3B82F6",
-                children=[boton_exportar_pdf(23, 'Informe FWF Individual'),
-                     html.Div(id="v23-output", style={"marginTop": "28px"})],
+                children=html.Div(id="v23-output", style={"marginTop": "28px"}),
             ),
             # ── Botón informe + componente descarga ──────────
             html.Div([
@@ -3607,10 +3643,6 @@ def aplicar_tema_auto(fig, tema=None):
 
 app = dash.Dash(
     __name__,
-    external_scripts=[
-        "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-    ],
     external_stylesheets=[
         dbc.themes.BOOTSTRAP,
         'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap',
@@ -3621,52 +3653,6 @@ app = dash.Dash(
 )
 
 server = app.server
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-# HELPER: Botón "Exportar PDF" para cada visualización (VIZ 1-23)
-# ═══════════════════════════════════════════════════════════════════════════
-def boton_exportar_pdf(viz_num, titulo="Visualización"):
-    """Botón rojo para exportar la sección a PDF via html2canvas + jsPDF."""
-    return html.Div([
-        html.Button(
-            [html.I(className="fas fa-file-pdf", style={"marginRight": "7px"}),
-             f"⬇  Exportar PDF — {titulo}"],
-            id=f"btn-pdf-v{viz_num}",
-            n_clicks=0,
-            title=f"Exportar {titulo} a PDF",
-            style={
-                "backgroundColor": "#DC2626",
-                "color": "white",
-                "padding": "9px 20px",
-                "borderRadius": "9px",
-                "border": "none",
-                "fontSize": "13px",
-                "fontWeight": "700",
-                "cursor": "pointer",
-                "boxShadow": "0 2px 10px rgba(220,38,38,0.35)",
-                "transition": "all 0.25s",
-                "fontFamily": "Inter, sans-serif",
-                "display": "inline-flex",
-                "alignItems": "center",
-                "gap": "5px",
-                "letterSpacing": "0.3px",
-            }
-        ),
-        html.Div(
-            id=f"pdf-status-v{viz_num}",
-            style={"fontSize": "11px", "color": "#6B7280",
-                   "marginTop": "4px", "textAlign": "right"}
-        )
-    ], style={
-        "display": "flex",
-        "flexDirection": "column",
-        "alignItems": "flex-end",
-        "marginBottom": "12px",
-        "marginTop": "6px",
-        "paddingRight": "2px",
-    })
-
 
 # ====================================================================== 
 # VALORES POR DEFECTO PARA FECHAS (Necesarios para el layout)
@@ -5696,26 +5682,18 @@ class CalculadoraICI:
         return resultados
 
     def calcular_ici_dataset(self, fecha_inicio=None, fecha_fin=None):
-        """Calcula ICI para todo el dataset en el rango de fechas
-        OPTIMIZADO RENDER: solo itera sobre fechas con sesiones GPS reales"""
+        """Calcula ICI para todo el dataset en el rango de fechas"""
         if fecha_inicio is None:
             fecha_inicio = self.df['Fecha'].min()
         if fecha_fin is None:
             fecha_fin = self.df['Fecha'].max()
 
-        # Solo fechas con sesiones reales - evita iterar 300+ días vacíos
-        df_rango = self.df[(self.df['Fecha'] >= fecha_inicio) & (self.df['Fecha'] <= fecha_fin)]
-        atletas = df_rango['Atleta'].unique()
-
-        # Limitar atletas en Render para evitar timeout (máx 30 atletas)
-        if len(atletas) > 30:
-            atletas = atletas[:30]
-
+        atletas = self.df['Atleta'].unique()
+        fechas = pd.date_range(start=fecha_inicio, end=fecha_fin, freq='D')
         resultados_list = []
+
         for atleta in atletas:
-            # Solo fechas donde ESE atleta tiene datos - no todas las fechas del rango
-            fechas_atleta = df_rango[df_rango['Atleta'] == atleta]['Fecha'].unique()
-            for fecha in fechas_atleta:
+            for fecha in fechas:
                 try:
                     res = self.calcular_ici(atleta, fecha)
                     res['Atleta'] = atleta
@@ -5747,7 +5725,7 @@ def analisis_clustering_ici(df_ici, n_clusters=3):
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
-    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=3)
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
     df_cluster['Cluster'] = kmeans.fit_predict(X_scaled)
 
     pca = PCA(n_components=2)
@@ -5840,7 +5818,7 @@ def deteccion_anomalias_ici(df_ici):
 
     X = df_anom[features].values
 
-    iso_forest = IsolationForest(contamination=0.1, random_state=42, n_estimators=50)
+    iso_forest = IsolationForest(contamination=0.1, random_state=42)
     df_anom['anomalia'] = iso_forest.fit_predict(X)
     df_anom['anomalia_label'] = df_anom['anomalia'].map({1: 'Normal', -1: 'Anomalía'})
     df_anom['anomaly_score'] = iso_forest.score_samples(X)
@@ -6021,7 +5999,7 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
         df_gps = pd.DataFrame(gps_data)
         df_gps['Fecha'] = pd.to_datetime(df_gps['Fecha'])
         # RENDER: limitar registros para evitar timeout/502
-        MAX_REGISTROS_RENDER = 1500  # reducido para evitar timeout en Render
+        MAX_REGISTROS_RENDER = 3000
         if len(df_gps) > MAX_REGISTROS_RENDER:
             df_gps = df_gps.sort_values('Fecha').tail(MAX_REGISTROS_RENDER).reset_index(drop=True)
 
@@ -7121,7 +7099,7 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
         df_gps = pd.DataFrame(gps_data)
         df_gps['Fecha'] = pd.to_datetime(df_gps['Fecha'])
         # RENDER: limitar registros para evitar timeout/502
-        MAX_REGISTROS_RENDER = 1500  # reducido para evitar timeout en Render
+        MAX_REGISTROS_RENDER = 3000
         if len(df_gps) > MAX_REGISTROS_RENDER:
             df_gps = df_gps.sort_values('Fecha').tail(MAX_REGISTROS_RENDER).reset_index(drop=True)
 
@@ -9315,6 +9293,156 @@ app.layout = html.Div(id='main-container', style={'backgroundColor': '#FFFFFF', 
             ], className='header-badges')
         ], className='main-header'),
         
+        # ====================================================================
+        # BOTÓN DE EXPORTACIÓN GLOBAL
+        # ====================================================================
+        html.Div([
+            html.Div([
+                html.I(className="fas fa-download", style={'fontSize': '32px', 'color': '#10B981', 'marginBottom': '12px'}),
+                html.H3("📥 Exportar Reportes", style={
+                    'fontSize': '20px',
+                    'fontWeight': '900',
+                    'color': '#001F54',
+                    'marginBottom': '8px',
+                    'marginTop': '0'
+                }),
+                html.P("Exporta las visualizaciones actuales en formato PNG de alta calidad (1920x1080)", style={
+                    'fontSize': '14px',
+                    'color': '#64748B',
+                    'marginBottom': '20px',
+                    'marginTop': '0'
+                }),
+            ], style={'textAlign': 'center'}),
+
+            html.Button(
+                [html.I(className="fas fa-file-export", style={'marginRight': '10px'}), 
+                 "EXPORTAR VISUALIZACIONES"],
+                id='btn-exportar-global',
+                n_clicks=0,
+                style={
+                    'backgroundColor': '#10B981',
+                    'color': 'white',
+                    'padding': '16px 40px',
+                    'borderRadius': '10px',
+                    'border': 'none',
+                    'fontSize': '16px',
+                    'fontWeight': 'bold',
+                    'cursor': 'pointer',
+                    'boxShadow': '0 4px 6px rgba(16,185,129,0.3)',
+                    'width': '100%',
+                    'maxWidth': '450px',
+                    'transition': 'all 0.3s',
+                    'textTransform': 'uppercase',
+                    'letterSpacing': '0.5px'
+                }
+            ),
+
+            html.Div(id='area-exportacion-global', style={'marginTop': '20px'}),
+
+            # ====================================================================
+            # ✅ NUEVO DASH 3.4.0 (2026) - CLIPBOARD PERSONALIZABLE
+            # ====================================================================
+            html.Div([
+                html.Div([
+                    html.I(className="fas fa-copy", style={'fontSize': '28px', 'color': '#3B82F6', 'marginBottom': '10px'}),
+                    html.H3("📋 Copiar Métricas Rápidas", style={
+                        'fontSize': '18px',
+                        'fontWeight': '800',
+                        'color': '#001F54',
+                        'marginBottom': '6px',
+                        'marginTop': '8px'
+                    }),
+                    html.P("Copia el resumen de métricas clave al portapapeles con un clic", style={
+                        'fontSize': '13px',
+                        'color': '#64748B',
+                        'marginBottom': '16px',
+                        'marginTop': '0'
+                    }),
+                ], style={'textAlign': 'center'}),
+
+                html.Button(
+                    [html.I(className='fas fa-copy', style={'marginRight': '8px'}),
+                     'COPIAR DATOS AL PORTAPAPELES'],
+                    id='btn-copy-metricas',
+                    n_clicks=0,
+                    style={
+                        'backgroundColor': '#3B82F6',
+                        'color': 'white',
+                        'padding': '14px 32px',
+                        'borderRadius': '10px',
+                        'border': 'none',
+                        'fontSize': '14px',
+                        'fontWeight': 'bold',
+                        'cursor': 'pointer',
+                        'boxShadow': '0 4px 6px rgba(59,130,246,0.3)',
+                        'width': '100%',
+                        'maxWidth': '400px',
+                        'transition': 'all 0.3s'
+                    }
+                ),
+                html.Div(
+                    id='clipboard-status',
+                    style={
+                        'marginTop': '12px',
+                        'fontSize': '13px',
+                        'fontWeight': '600',
+                        'color': '#10B981',
+                        'textAlign': 'center',
+                        'minHeight': '20px'
+                    }
+                ),
+
+                dcc.Loading(
+                type="circle",
+                color="#3B82F6",
+                children=[
+                    html.Div(
+                    id="metricas-resumen",
+                    children=[
+                        html.Pre(
+                            "📊 MÉTRICAS GPS - RESUMEN EJECUTIVO\n\n"
+                            "• Total de Atletas: Disponible al cargar datos\n"
+                            "• Distancia Total Promedio: Disponible al cargar datos\n"
+                            "• Velocidad Máxima Promedio: Disponible al cargar datos\n"
+                            "• Período de Análisis: Disponible al cargar datos\n\n"
+                            "✨ Copia este resumen con el botón de arriba",
+                            style={
+                                'backgroundColor': '#F8FAFC',
+                                'padding': '20px',
+                                'borderRadius': '12px',
+                                'border': '2px solid #CBD5E1',
+                                'fontSize': '13px',
+                                'lineHeight': '1.8',
+                                'color': '#0F172A',
+                                'fontFamily': 'monospace',
+                                'whiteSpace': 'pre-wrap',
+                                'margin': '0'
+                            }
+                        )
+                ]
+            )
+                    ],
+                    style={'maxWidth': '500px', 'margin': '12px auto 0'}
+                )
+
+            ], style={
+                'marginTop': '32px',
+                'padding': '24px',
+                'backgroundColor': '#EFF6FF',
+                'borderRadius': '16px',
+                'border': '3px solid #3B82F6',
+                'boxShadow': '0 4px 6px rgba(0,0,0,0.08)'
+            }),
+
+        ], style={
+            'padding': '30px',
+            'backgroundColor': '#F0FDF4',
+            'borderRadius': '16px',
+            'marginBottom': '40px',
+            'border': '3px solid #10B981',
+            'textAlign': 'center',
+            'boxShadow': '0 4px 6px rgba(0,0,0,0.08)'
+        }),
 
 dcc.Loading(
                 type="circle",
@@ -9990,7 +10118,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(1, 'Evolución Temporal GPS'),
                     html.Div(id='v1-output', style={'marginTop': '28px'})
                 ]
             )
@@ -10059,7 +10186,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(2, 'Comparativa por Agrupación'),
                     html.Div(id='v2-output', style={'marginTop': '28px'})
                 ]
             )
@@ -10129,7 +10255,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(3, 'Análisis ACR Temporal'),
                     html.Div(id='v3-output', style={'marginTop': '28px'})
                 ]
             ),
@@ -10197,7 +10322,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(4, 'Carga Aguda vs Crónica'),
                     html.Div(id='v4-output', style={'marginTop': '28px'})
                 ]
             )
@@ -10285,7 +10409,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(5, 'Panel de Fatiga'),
                     html.Div(id='v5-output', style={'marginTop': '28px'})
                 ]
             )
@@ -10452,7 +10575,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(6, 'Distribución por Posición'),
                     html.Div(id='v6-output', style={'marginTop': '32px'})
                 ]
             )
@@ -10514,7 +10636,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(7, 'Control Velocidad Máxima'),
                     html.Div(id='v7-output', style={'marginTop': '32px'})
                 ]
             )
@@ -10578,7 +10699,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(8, 'Semana Actual vs MA-4'),
                     html.Div(id='v8-output', style={'marginTop': '32px'})
                 ]
             )
@@ -10639,7 +10759,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(9, 'Reporte Sesión Única'),
                     html.Div(id='v9-output', style={'marginTop': '32px'})
                 ]
             )
@@ -10692,7 +10811,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(10, 'Gauge Control-Partidos'),
                     html.Div(id='v10-output', style={'marginTop': '32px'})
                 ]
             )
@@ -10736,7 +10854,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(11, 'FWF - ACR Individual'),
                     html.Div(id='v11-output', style={'marginTop': '28px'})
                 ]
             )
@@ -10791,7 +10908,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(12, 'Heatmap FWF'),
                     html.Div(id='v12-output', style={'marginTop': '32px'})
                 ]
             )
@@ -10831,7 +10947,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(13, 'Tabla FWF Semanal'),
                     html.Div(id='v13-output', style={'marginTop': '32px'})
                 ]
             )
@@ -10885,7 +11000,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(14, 'Monotonía y Strain'),
                     html.Div(id='v14-output', style={'marginTop': '32px'})
                 ]
             )
@@ -10949,7 +11063,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(15, 'Coherencia Carga-Partido'),
                     html.Div(id='v15-output', style={'marginTop': '32px'})
                 ]
             )
@@ -10999,7 +11112,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(16, 'ICI - Índice Compuesto'),
                     html.Div(id='v16-output', style={'marginTop': '32px'})
                 ]
             )
@@ -11072,7 +11184,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(17, 'MPE Work-Recovery'),
                     html.Div(id='v17-output', style={'marginTop': '28px'})
                 ]
             ),
@@ -11188,7 +11299,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(18, 'Análisis Posicional'),
                     html.Div(id='v18-output', style={'marginTop': '28px'})
                 ]
             ),
@@ -11288,7 +11398,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(19, 'Coherencia Entrenamiento-Competición'),
                     html.Div(id='v19-output', style={'marginTop': '28px'})
                 ]
             ),
@@ -11394,7 +11503,6 @@ def render_dashboard(gps_data, pos_data, part_data):
                 type="circle",
                 color="#3B82F6",
                 children=[
-                    boton_exportar_pdf(20, 'KDE Distribución de Carga'),
                     html.Div(id='v20-output', style={'marginTop': '32px'})
                 ]
             ),
@@ -11593,8 +11701,7 @@ def render_dashboard(gps_data, pos_data, part_data):
         type="circle",
         color="#3B82F6",
         children=[
-            boton_exportar_pdf(21, 'Riesgo Lesional'),
-                    html.Div(id='v21-output', style={"marginTop": "28px"})
+            html.Div(id='v21-output', style={"marginTop": "28px"})
         ]
     ),
 
@@ -11705,8 +11812,7 @@ def render_dashboard(gps_data, pos_data, part_data):
     dcc.Loading(
         type="circle",
         color="#3B82F6",
-        children=[boton_exportar_pdf(22, 'ML Híbrido Extendido'),
-                    html.Div(id='v22-output', style={"marginTop": "28px"})]
+        children=[html.Div(id='v22-output', style={"marginTop": "28px"})]
     ),
 
     # INFO BOX 1: RANGO ÓPTIMO DE DÍAS
@@ -12665,7 +12771,7 @@ def update_v22(n, gps_data, pos_data, fecha_inicio, fecha_fin, posicion, umbral)
         df_gps = pd.DataFrame(gps_data)
         df_gps['Fecha'] = pd.to_datetime(df_gps['Fecha'])
         # RENDER: limitar registros para evitar timeout/502
-        MAX_REGISTROS_RENDER = 1500  # reducido para evitar timeout en Render
+        MAX_REGISTROS_RENDER = 3000
         if len(df_gps) > MAX_REGISTROS_RENDER:
             df_gps = df_gps.sort_values('Fecha').tail(MAX_REGISTROS_RENDER).reset_index(drop=True)
 
@@ -18983,6 +19089,31 @@ def toggle_auto_refresh(switch_value):
 # ============================================================================
 # CALLBACK EXPORTACIÓN PNG - client-side, sin kaleido
 # ============================================================================
+app.clientside_callback(
+    """
+    function(n_clicks) {
+        if (!n_clicks || n_clicks === 0) { return ''; }
+        var graphs = document.querySelectorAll('.js-plotly-plot');
+        if (!graphs || graphs.length === 0) {
+            return 'No se encontraron gráficos. Navegá a una VIZ con datos y volvé a intentar.';
+        }
+        graphs.forEach(function(graph, idx) {
+            try {
+                setTimeout(function() {
+                    Plotly.downloadImage(graph, {
+                        format: 'png', width: 1920, height: 1080, scale: 2,
+                        filename: 'TFM_GPS_VIZ_' + (idx + 1)
+                    });
+                }, idx * 1800);
+            } catch(e) { console.error('Error exportando VIZ ' + (idx+1) + ': ' + e); }
+        });
+        return graphs.length + ' gráfico(s) encontrados. Las descargas PNG comenzarán en segundos...';
+    }
+    """,
+    Output('area-exportacion-global', 'children'),
+    Input('btn-exportar-global', 'n_clicks'),
+    prevent_initial_call=True
+)
 
 
 @app.callback(
@@ -19761,7 +19892,7 @@ def update_v23_fwf(n, gps_data, atleta, variable, fi, ff, va, vc):
         df["Fecha"] = pd.to_datetime(df["Fecha"], errors="coerce")
         df = df.sort_values("Fecha")
         # RENDER: limitar registros para evitar timeout/502
-        MAX_REGISTROS_RENDER = 1500  # reducido para evitar timeout en Render
+        MAX_REGISTROS_RENDER = 3000
         if len(df) > MAX_REGISTROS_RENDER:
             df = df.tail(MAX_REGISTROS_RENDER).reset_index(drop=True)
 
@@ -21349,1347 +21480,6 @@ def descargar_informe_v23(n_clicks, gpsdata, atleta, variable, va, vc):
     except Exception as e:
         logger.error(f"Error informe: {e}"); return dash.no_update
 
-
-# ═══════════════════════════════════════════════════════════════════════════
-# CLIENTSIDE CALLBACKS — Exportar PDF (VIZ 1-23)
-# Tecnología: html2canvas + jsPDF (CDN cargados vía external_scripts)
-# ═══════════════════════════════════════════════════════════════════════════
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v1-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v1');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ01_Evolucion_GPS_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Evolución Temporal GPS';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 1:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Evolución Temporal GPS';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v1', 'children'),
-        Input('btn-pdf-v1', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 1: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v2-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v2');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ02_Comparativa_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Comparativa por Agrupación';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 2:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Comparativa por Agrupación';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v2', 'children'),
-        Input('btn-pdf-v2', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 2: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v3-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v3');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ03_ACR_Temporal_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Análisis ACR Temporal';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 3:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Análisis ACR Temporal';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v3', 'children'),
-        Input('btn-pdf-v3', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 3: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v4-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v4');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ04_Carga_Aguda_Cronica_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Carga Aguda vs Crónica';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 4:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Carga Aguda vs Crónica';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v4', 'children'),
-        Input('btn-pdf-v4', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 4: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v5-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v5');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ05_Panel_Fatiga_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Panel de Fatiga';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 5:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Panel de Fatiga';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v5', 'children'),
-        Input('btn-pdf-v5', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 5: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v6-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v6');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ06_Distribucion_Posicion_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Distribución por Posición';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 6:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Distribución por Posición';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v6', 'children'),
-        Input('btn-pdf-v6', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 6: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v7-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v7');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ07_Control_Velocidad_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Control Velocidad Máxima';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 7:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Control Velocidad Máxima';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v7', 'children'),
-        Input('btn-pdf-v7', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 7: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v8-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v8');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ08_Semana_vs_MA4_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Semana Actual vs MA-4';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 8:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Semana Actual vs MA-4';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v8', 'children'),
-        Input('btn-pdf-v8', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 8: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v9-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v9');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ09_Reporte_Sesion_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Reporte Sesión Única';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 9:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Reporte Sesión Única';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v9', 'children'),
-        Input('btn-pdf-v9', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 9: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v10-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v10');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ10_Gauge_Control_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Gauge Control-Partidos';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 10:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Gauge Control-Partidos';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v10', 'children'),
-        Input('btn-pdf-v10', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 10: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v11-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v11');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ11_FWF_ACR_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — FWF - ACR Individual';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 11:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — FWF - ACR Individual';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v11', 'children'),
-        Input('btn-pdf-v11', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 11: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v12-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v12');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ12_Heatmap_FWF_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Heatmap FWF';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 12:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Heatmap FWF';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v12', 'children'),
-        Input('btn-pdf-v12', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 12: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v13-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v13');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ13_Tabla_FWF_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Tabla FWF Semanal';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 13:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Tabla FWF Semanal';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v13', 'children'),
-        Input('btn-pdf-v13', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 13: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v14-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v14');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ14_Monotonia_Strain_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Monotonía y Strain';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 14:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Monotonía y Strain';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v14', 'children'),
-        Input('btn-pdf-v14', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 14: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v15-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v15');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ15_Coherencia_Carga_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Coherencia Carga-Partido';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 15:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Coherencia Carga-Partido';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v15', 'children'),
-        Input('btn-pdf-v15', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 15: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v16-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v16');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ16_ICI_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — ICI - Índice Compuesto';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 16:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — ICI - Índice Compuesto';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v16', 'children'),
-        Input('btn-pdf-v16', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 16: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v17-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v17');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ17_MPE_Work_Recovery_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — MPE Work-Recovery';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 17:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — MPE Work-Recovery';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v17', 'children'),
-        Input('btn-pdf-v17', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 17: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v18-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v18');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ18_Posicional_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Análisis Posicional';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 18:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Análisis Posicional';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v18', 'children'),
-        Input('btn-pdf-v18', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 18: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v19-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v19');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ19_Coherencia_Entrenamiento_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Coherencia Entrenamiento-Competición';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 19:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Coherencia Entrenamiento-Competición';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v19', 'children'),
-        Input('btn-pdf-v19', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 19: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v20-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v20');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ20_KDE_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — KDE Distribución de Carga';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 20:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — KDE Distribución de Carga';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v20', 'children'),
-        Input('btn-pdf-v20', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 20: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v21-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v21');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ21_Riesgo_Lesional_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Riesgo Lesional';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 21:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Riesgo Lesional';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v21', 'children'),
-        Input('btn-pdf-v21', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 21: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v22-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v22');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ22_ML_Hibrido_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — ML Híbrido Extendido';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 22:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — ML Híbrido Extendido';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v22', 'children'),
-        Input('btn-pdf-v22', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 22: {_e}')
-
-
-try:
-    app.clientside_callback(
-        """function(n_clicks) {
-    if (!n_clicks || n_clicks === 0) return '';
-    var el = document.getElementById('v23-output');
-    if (!el) { return 'Error: sección no encontrada'; }
-    var btn = document.getElementById('btn-pdf-v23');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Generando PDF...';
-        btn.style.backgroundColor = '#9CA3AF';
-    }
-    html2canvas(el, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff', scrollX: 0,
-        scrollY: -window.scrollY, logging: false
-    }).then(function(canvas) {
-        var jsPDF = window.jspdf.jsPDF;
-        var imgData = canvas.toDataURL('image/png');
-        var pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-            unit: 'mm', format: 'a4'
-        });
-        var pw = pdf.internal.pageSize.getWidth();
-        var ph = pdf.internal.pageSize.getHeight() - 20;
-        var cw = canvas.width * 0.264583;
-        var ch = canvas.height * 0.264583;
-        var r = Math.min(pw / cw, ph / ch);
-        var iw = cw * r; var ih = ch * r;
-        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
-        pdf.save('VIZ23_Informe_FWF_GPS2025.pdf');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
-            btn.style.backgroundColor = '#059669';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Informe FWF Individual';
-                btn.style.backgroundColor = '#DC2626';
-            }, 3000);
-        }
-    }).catch(function(err) {
-        console.error('Error PDF VIZ 23:', err);
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Informe FWF Individual';
-            btn.style.backgroundColor = '#DC2626';
-        }
-    });
-    return 'Generando...';
-}""",
-        Output('pdf-status-v23', 'children'),
-        Input('btn-pdf-v23', 'n_clicks'),
-        prevent_initial_call=True
-    )
-except Exception as _e:
-    logger.warning(f'PDF callback VIZ 23: {_e}')
-
-
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=8050)
 
@@ -23160,8 +21950,6 @@ app.clientside_callback(
 # ==============================================================================
 # FIN DEL SISTEMA DASH PATCH
 # ==============================================================================
-
-
 
 
 
