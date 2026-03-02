@@ -83,7 +83,7 @@ from dotenv import load_dotenv
 
 load_dotenv()  # Carga variables desde .env (si existe)
 
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")  # configurada via variables de entorno en Render
 GROQ_URL  = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
@@ -5696,18 +5696,26 @@ class CalculadoraICI:
         return resultados
 
     def calcular_ici_dataset(self, fecha_inicio=None, fecha_fin=None):
-        """Calcula ICI para todo el dataset en el rango de fechas"""
+        """Calcula ICI para todo el dataset en el rango de fechas
+        OPTIMIZADO RENDER: solo itera sobre fechas con sesiones GPS reales"""
         if fecha_inicio is None:
             fecha_inicio = self.df['Fecha'].min()
         if fecha_fin is None:
             fecha_fin = self.df['Fecha'].max()
 
-        atletas = self.df['Atleta'].unique()
-        fechas = pd.date_range(start=fecha_inicio, end=fecha_fin, freq='D')
-        resultados_list = []
+        # Solo fechas con sesiones reales - evita iterar 300+ días vacíos
+        df_rango = self.df[(self.df['Fecha'] >= fecha_inicio) & (self.df['Fecha'] <= fecha_fin)]
+        atletas = df_rango['Atleta'].unique()
 
+        # Limitar atletas en Render para evitar timeout (máx 30 atletas)
+        if len(atletas) > 30:
+            atletas = atletas[:30]
+
+        resultados_list = []
         for atleta in atletas:
-            for fecha in fechas:
+            # Solo fechas donde ESE atleta tiene datos - no todas las fechas del rango
+            fechas_atleta = df_rango[df_rango['Atleta'] == atleta]['Fecha'].unique()
+            for fecha in fechas_atleta:
                 try:
                     res = self.calcular_ici(atleta, fecha)
                     res['Atleta'] = atleta
@@ -5739,7 +5747,7 @@ def analisis_clustering_ici(df_ici, n_clusters=3):
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
-    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=3)
     df_cluster['Cluster'] = kmeans.fit_predict(X_scaled)
 
     pca = PCA(n_components=2)
@@ -5832,7 +5840,7 @@ def deteccion_anomalias_ici(df_ici):
 
     X = df_anom[features].values
 
-    iso_forest = IsolationForest(contamination=0.1, random_state=42)
+    iso_forest = IsolationForest(contamination=0.1, random_state=42, n_estimators=50)
     df_anom['anomalia'] = iso_forest.fit_predict(X)
     df_anom['anomalia_label'] = df_anom['anomalia'].map({1: 'Normal', -1: 'Anomalía'})
     df_anom['anomaly_score'] = iso_forest.score_samples(X)
@@ -6013,7 +6021,7 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
         df_gps = pd.DataFrame(gps_data)
         df_gps['Fecha'] = pd.to_datetime(df_gps['Fecha'])
         # RENDER: limitar registros para evitar timeout/502
-        MAX_REGISTROS_RENDER = 3000
+        MAX_REGISTROS_RENDER = 1500  # reducido para evitar timeout en Render
         if len(df_gps) > MAX_REGISTROS_RENDER:
             df_gps = df_gps.sort_values('Fecha').tail(MAX_REGISTROS_RENDER).reset_index(drop=True)
 
@@ -7113,7 +7121,7 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
         df_gps = pd.DataFrame(gps_data)
         df_gps['Fecha'] = pd.to_datetime(df_gps['Fecha'])
         # RENDER: limitar registros para evitar timeout/502
-        MAX_REGISTROS_RENDER = 3000
+        MAX_REGISTROS_RENDER = 1500  # reducido para evitar timeout en Render
         if len(df_gps) > MAX_REGISTROS_RENDER:
             df_gps = df_gps.sort_values('Fecha').tail(MAX_REGISTROS_RENDER).reset_index(drop=True)
 
@@ -12657,7 +12665,7 @@ def update_v22(n, gps_data, pos_data, fecha_inicio, fecha_fin, posicion, umbral)
         df_gps = pd.DataFrame(gps_data)
         df_gps['Fecha'] = pd.to_datetime(df_gps['Fecha'])
         # RENDER: limitar registros para evitar timeout/502
-        MAX_REGISTROS_RENDER = 3000
+        MAX_REGISTROS_RENDER = 1500  # reducido para evitar timeout en Render
         if len(df_gps) > MAX_REGISTROS_RENDER:
             df_gps = df_gps.sort_values('Fecha').tail(MAX_REGISTROS_RENDER).reset_index(drop=True)
 
@@ -19753,7 +19761,7 @@ def update_v23_fwf(n, gps_data, atleta, variable, fi, ff, va, vc):
         df["Fecha"] = pd.to_datetime(df["Fecha"], errors="coerce")
         df = df.sort_values("Fecha")
         # RENDER: limitar registros para evitar timeout/502
-        MAX_REGISTROS_RENDER = 3000
+        MAX_REGISTROS_RENDER = 1500  # reducido para evitar timeout en Render
         if len(df) > MAX_REGISTROS_RENDER:
             df = df.tail(MAX_REGISTROS_RENDER).reset_index(drop=True)
 
@@ -23152,9 +23160,6 @@ app.clientside_callback(
 # ==============================================================================
 # FIN DEL SISTEMA DASH PATCH
 # ==============================================================================
-
-
-
 
 
 
