@@ -21902,16 +21902,19 @@ app.clientside_callback(
                 });
 
                 console.log('📸 Capturando sección ' + (idx+1) + '/' + secsValidas.length);
-                html2canvas(sec, {
-                    scale: 1.0,
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    allowTaint: true,
-                    windowHeight: sec.scrollHeight + 200,
-                    height: sec.scrollHeight,
-                    y: sec.getBoundingClientRect().top + window.scrollY
-                })
+
+                // Scroll a la sección para asegurar que esté visible
+                sec.scrollIntoView({behavior: 'instant', block: 'start'});
+
+                // Esperar 100ms para que se renderice
+                setTimeout(function() {
+                    html2canvas(sec, {
+                        scale: 0.8,
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        logging: false,
+                        allowTaint: true
+                    })
                 .then(function(canvas) {
                     console.log('✅ Canvas creado ' + (idx+1) + ' - ' + canvas.width + 'x' + canvas.height);
                     // Restaurar estilos originales de tablas
@@ -21929,7 +21932,7 @@ app.clientside_callback(
 
                     // JPEG 78% en lugar de PNG: reduce peso ~70% con calidad visual aceptable
                     console.log('🖼️ Convirtiendo a JPEG...');
-                    var imgData = canvas.toDataURL('image/jpeg', 0.78);
+                    var imgData = canvas.toDataURL('image/jpeg', 0.6);
                     var imgY = title ? 10 : 5;
                     var margin = 8;
                     var imgW = pageW - margin*2;
@@ -21942,7 +21945,7 @@ app.clientside_callback(
                     idx++;
                     // Pausa 300ms: evita congelar el navegador entre capturas
                     console.log('⏳ Esperando 300ms antes de siguiente captura...');
-                    setTimeout(capturarSiguiente, 300);
+                    setTimeout(capturarSiguiente, 100);
 
                 }).catch(function(e) {
                     console.error('❌ Error en sección ' + (idx+1) + ':', e);
@@ -21953,7 +21956,7 @@ app.clientside_callback(
                     });
                     filtros.forEach(function(el){ el.style.visibility=''; });
                     idx++;
-                    setTimeout(capturarSiguiente, 300);
+                    setTimeout(capturarSiguiente, 100);
                 });
             }
             capturarSiguiente();
