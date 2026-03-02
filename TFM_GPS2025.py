@@ -21901,6 +21901,7 @@ app.clientside_callback(
                     t.style.height    = 'auto';
                 });
 
+                console.log('📸 Capturando sección ' + (idx+1) + '/' + secsValidas.length);
                 html2canvas(sec, {
                     scale: 1.0,
                     useCORS: true,
@@ -21912,6 +21913,7 @@ app.clientside_callback(
                     y: sec.getBoundingClientRect().top + window.scrollY
                 })
                 .then(function(canvas) {
+                    console.log('✅ Canvas creado ' + (idx+1) + ' - ' + canvas.width + 'x' + canvas.height);
                     // Restaurar estilos originales de tablas
                     origTablaStyles.forEach(function(s) {
                         s.el.style.maxHeight = s.maxHeight;
@@ -21926,6 +21928,7 @@ app.clientside_callback(
                     if (title) { pdf.setFontSize(10); pdf.setTextColor(0,31,84); pdf.text(title.substring(0,80), 10, 7); }
 
                     // JPEG 78% en lugar de PNG: reduce peso ~70% con calidad visual aceptable
+                    console.log('🖼️ Convirtiendo a JPEG...');
                     var imgData = canvas.toDataURL('image/jpeg', 0.78);
                     var imgY = title ? 10 : 5;
                     var margin = 8;
@@ -21935,18 +21938,20 @@ app.clientside_callback(
                     var pdfRatio = imgW / imgH;
                     if (canvasRatio < pdfRatio) { imgW = imgH * canvasRatio; } else { imgH = imgW / canvasRatio; }
                     pdf.addImage(imgData, 'JPEG', margin, imgY, imgW, imgH, '', 'FAST');
+                    console.log('✅ Página ' + (idx+1) + ' agregada al PDF');
                     idx++;
                     // Pausa 300ms: evita congelar el navegador entre capturas
+                    console.log('⏳ Esperando 300ms antes de siguiente captura...');
                     setTimeout(capturarSiguiente, 300);
 
                 }).catch(function(e) {
+                    console.error('❌ Error en sección ' + (idx+1) + ':', e);
                     origTablaStyles.forEach(function(s) {
                         s.el.style.maxHeight = s.maxHeight;
                         s.el.style.overflow  = s.overflow;
                         s.el.style.height    = s.height;
                     });
                     filtros.forEach(function(el){ el.style.visibility=''; });
-                    console.error('Error secci\u00f3n ' + idx + ': ' + e);
                     idx++;
                     setTimeout(capturarSiguiente, 300);
                 });
