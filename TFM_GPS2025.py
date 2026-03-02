@@ -9308,103 +9308,6 @@ app.layout = html.Div(id='main-container', style={'backgroundColor': '#FFFFFF', 
         ], className='main-header'),
         
 
-
-            # ====================================================================
-            # ✅ NUEVO DASH 3.4.0 (2026) - CLIPBOARD PERSONALIZABLE
-            # ====================================================================
-            html.Div([
-                html.Div([
-                    html.I(className="fas fa-copy", style={'fontSize': '28px', 'color': '#3B82F6', 'marginBottom': '10px'}),
-                    html.H3("📋 Copiar Métricas Rápidas", style={
-                        'fontSize': '18px',
-                        'fontWeight': '800',
-                        'color': '#001F54',
-                        'marginBottom': '6px',
-                        'marginTop': '8px'
-                    }),
-                    html.P("Copia el resumen de métricas clave al portapapeles con un clic", style={
-                        'fontSize': '13px',
-                        'color': '#64748B',
-                        'marginBottom': '16px',
-                        'marginTop': '0'
-                    }),
-                ], style={'textAlign': 'center'}),
-
-                html.Button(
-                    [html.I(className='fas fa-copy', style={'marginRight': '8px'}),
-                     'COPIAR DATOS AL PORTAPAPELES'],
-                    id='btn-copy-metricas',
-                    n_clicks=0,
-                    style={
-                        'backgroundColor': '#3B82F6',
-                        'color': 'white',
-                        'padding': '14px 32px',
-                        'borderRadius': '10px',
-                        'border': 'none',
-                        'fontSize': '14px',
-                        'fontWeight': 'bold',
-                        'cursor': 'pointer',
-                        'boxShadow': '0 4px 6px rgba(59,130,246,0.3)',
-                        'width': '100%',
-                        'maxWidth': '400px',
-                        'transition': 'all 0.3s'
-                    }
-                ),
-                html.Div(
-                    id='clipboard-status',
-                    style={
-                        'marginTop': '12px',
-                        'fontSize': '13px',
-                        'fontWeight': '600',
-                        'color': '#10B981',
-                        'textAlign': 'center',
-                        'minHeight': '20px'
-                    }
-                ),
-
-                dcc.Loading(
-                type="circle",
-                color="#3B82F6",
-                children=[
-                    html.Div(
-                    id="metricas-resumen",
-                    children=[
-                        html.Pre(
-                            "📊 MÉTRICAS GPS - RESUMEN EJECUTIVO\n\n"
-                            "• Total de Atletas: Disponible al cargar datos\n"
-                            "• Distancia Total Promedio: Disponible al cargar datos\n"
-                            "• Velocidad Máxima Promedio: Disponible al cargar datos\n"
-                            "• Período de Análisis: Disponible al cargar datos\n\n"
-                            "✨ Copia este resumen con el botón de arriba",
-                            style={
-                                'backgroundColor': '#F8FAFC',
-                                'padding': '20px',
-                                'borderRadius': '12px',
-                                'border': '2px solid #CBD5E1',
-                                'fontSize': '13px',
-                                'lineHeight': '1.8',
-                                'color': '#0F172A',
-                                'fontFamily': 'monospace',
-                                'whiteSpace': 'pre-wrap',
-                                'margin': '0'
-                            }
-                        )
-                ]
-            )
-                    ],
-                    style={'maxWidth': '500px', 'margin': '12px auto 0'}
-                )
-
-            ], style={
-                'marginTop': '32px',
-                'padding': '24px',
-                'backgroundColor': '#EFF6FF',
-                'borderRadius': '16px',
-                'border': '3px solid #3B82F6',
-                'boxShadow': '0 4px 6px rgba(0,0,0,0.08)'
-            }),
-
-
 dcc.Loading(
                 type="circle",
                 color="#3B82F6",
@@ -19069,7 +18972,9 @@ def toggle_auto_refresh(switch_value):
 
 
 
-
+# ============================================================================
+# CALLBACK EXPORTACIÓN PNG - client-side, sin kaleido
+# ============================================================================
 
 
 @app.callback(
@@ -21115,13 +21020,9 @@ def analisis_ia_v23_groq(n_clicks, gps_data, atleta, variable, fi, ff, va, vc):
         # Plantel score
         try:
             rp = calcular_tabla_plantel(df, variable, va, vc)
-            # rp es una lista de dicts (no un DataFrame)
-            if rp and len(rp) > 0 and isinstance(rp[0], dict) and "score" in rp[0]:
-                scores = [r.get("score", 0) for r in rp]
+            if rp is not None and not rp.empty and "score" in rp.columns:
                 plantel_txt = (f"{len(rp)} jugadores — Score medio: "
-                               f"{round(sum(scores)/len(scores), 1)} | Max: {round(max(scores), 1)}")
-            elif rp and len(rp) > 0:
-                plantel_txt = f"{len(rp)} jugadores en el plantel."
+                               f"{round(rp['score'].mean(),1)} | Max: {round(rp['score'].max(),1)}")
             else:
                 plantel_txt = "No disponible."
         except Exception:
