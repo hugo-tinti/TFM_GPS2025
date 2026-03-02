@@ -2182,8 +2182,8 @@ def layout_viz23_fwf(df_gps: pd.DataFrame = None) -> html.Div:
             dcc.Loading(
                 type="circle",
                 color="#3B82F6",
-                children=boton_exportar_pdf(23, 'Informe FWF Individual'),
-                html.Div(id="v23-output", style={"marginTop": "28px"}),
+                children=[boton_exportar_pdf(23, 'Informe FWF Individual'),
+                     html.Div(id="v23-output", style={"marginTop": "28px"})],
             ),
             # ── Botón informe + componente descarga ──────────
             html.Div([
@@ -3624,10 +3624,10 @@ server = app.server
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# HELPER: Botón "Exportar PDF" reutilizable para cada visualización (VIZ 1-23)
+# HELPER: Botón "Exportar PDF" para cada visualización (VIZ 1-23)
 # ═══════════════════════════════════════════════════════════════════════════
 def boton_exportar_pdf(viz_num, titulo="Visualización"):
-    """Crea un botón rojo para exportar la sección a PDF via html2canvas + jsPDF."""
+    """Botón rojo para exportar la sección a PDF via html2canvas + jsPDF."""
     return html.Div([
         html.Button(
             [html.I(className="fas fa-file-pdf", style={"marginRight": "7px"}),
@@ -10133,7 +10133,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(1, 'Evolución Temporal GPS'),
-                html.Div(id='v1-output', style={'marginTop': '28px'})
+                    html.Div(id='v1-output', style={'marginTop': '28px'})
                 ]
             )
         ], className='viz-section'),
@@ -10202,7 +10202,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(2, 'Comparativa por Agrupación'),
-                html.Div(id='v2-output', style={'marginTop': '28px'})
+                    html.Div(id='v2-output', style={'marginTop': '28px'})
                 ]
             )
         ], className='viz-section'),
@@ -10272,7 +10272,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(3, 'Análisis ACR Temporal'),
-                html.Div(id='v3-output', style={'marginTop': '28px'})
+                    html.Div(id='v3-output', style={'marginTop': '28px'})
                 ]
             ),
             html.Div([
@@ -10340,7 +10340,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(4, 'Carga Aguda vs Crónica'),
-                html.Div(id='v4-output', style={'marginTop': '28px'})
+                    html.Div(id='v4-output', style={'marginTop': '28px'})
                 ]
             )
         ], className='viz-section'),
@@ -10428,7 +10428,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(5, 'Panel de Fatiga'),
-                html.Div(id='v5-output', style={'marginTop': '28px'})
+                    html.Div(id='v5-output', style={'marginTop': '28px'})
                 ]
             )
         ], className='viz-section'),
@@ -10595,7 +10595,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(6, 'Distribución por Posición'),
-                html.Div(id='v6-output', style={'marginTop': '32px'})
+                    html.Div(id='v6-output', style={'marginTop': '32px'})
                 ]
             )
         ], className='viz-section'),
@@ -10657,7 +10657,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(7, 'Control Velocidad Máxima'),
-                html.Div(id='v7-output', style={'marginTop': '32px'})
+                    html.Div(id='v7-output', style={'marginTop': '32px'})
                 ]
             )
         ], className='viz-section'),
@@ -10721,7 +10721,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(8, 'Semana Actual vs MA-4'),
-                html.Div(id='v8-output', style={'marginTop': '32px'})
+                    html.Div(id='v8-output', style={'marginTop': '32px'})
                 ]
             )
         ], className='viz-section'),
@@ -10782,7 +10782,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(9, 'Reporte Sesión Única'),
-                html.Div(id='v9-output', style={'marginTop': '32px'})
+                    html.Div(id='v9-output', style={'marginTop': '32px'})
                 ]
             )
         ], className='viz-section')
@@ -10835,7 +10835,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(10, 'Gauge Control-Partidos'),
-                html.Div(id='v10-output', style={'marginTop': '32px'})
+                    html.Div(id='v10-output', style={'marginTop': '32px'})
                 ]
             )
         ], className='viz-section'),
@@ -10879,7 +10879,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(11, 'FWF - ACR Individual'),
-                html.Div(id='v11-output', style={'marginTop': '28px'})
+                    html.Div(id='v11-output', style={'marginTop': '28px'})
                 ]
             )
         ], className='viz-section'),
@@ -10934,7 +10934,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(12, 'Heatmap FWF'),
-                html.Div(id='v12-output', style={'marginTop': '32px'})
+                    html.Div(id='v12-output', style={'marginTop': '32px'})
                 ]
             )
         ], className='viz-section')
@@ -10974,7 +10974,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(13, 'Tabla FWF Semanal'),
-                html.Div(id='v13-output', style={'marginTop': '32px'})
+                    html.Div(id='v13-output', style={'marginTop': '32px'})
                 ]
             )
         ], className='viz-section'),
@@ -11028,7 +11028,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(14, 'Monotonía y Strain'),
-                html.Div(id='v14-output', style={'marginTop': '32px'})
+                    html.Div(id='v14-output', style={'marginTop': '32px'})
                 ]
             )
         ], className='viz-section')
@@ -11092,7 +11092,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(15, 'Coherencia Carga-Partido'),
-                html.Div(id='v15-output', style={'marginTop': '32px'})
+                    html.Div(id='v15-output', style={'marginTop': '32px'})
                 ]
             )
         ], className='viz-section'),
@@ -11142,7 +11142,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(16, 'ICI - Índice Compuesto'),
-                html.Div(id='v16-output', style={'marginTop': '32px'})
+                    html.Div(id='v16-output', style={'marginTop': '32px'})
                 ]
             )
         ], className='viz-section')
@@ -11215,7 +11215,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(17, 'MPE Work-Recovery'),
-                html.Div(id='v17-output', style={'marginTop': '28px'})
+                    html.Div(id='v17-output', style={'marginTop': '28px'})
                 ]
             ),
 
@@ -11331,7 +11331,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(18, 'Análisis Posicional'),
-                html.Div(id='v18-output', style={'marginTop': '28px'})
+                    html.Div(id='v18-output', style={'marginTop': '28px'})
                 ]
             ),
 
@@ -11431,7 +11431,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(19, 'Coherencia Entrenamiento-Competición'),
-                html.Div(id='v19-output', style={'marginTop': '28px'})
+                    html.Div(id='v19-output', style={'marginTop': '28px'})
                 ]
             ),
             html.Div([
@@ -11537,7 +11537,7 @@ def render_dashboard(gps_data, pos_data, part_data):
                 color="#3B82F6",
                 children=[
                     boton_exportar_pdf(20, 'KDE Distribución de Carga'),
-                html.Div(id='v20-output', style={'marginTop': '32px'})
+                    html.Div(id='v20-output', style={'marginTop': '32px'})
                 ]
             ),
 
@@ -11736,7 +11736,7 @@ def render_dashboard(gps_data, pos_data, part_data):
         color="#3B82F6",
         children=[
             boton_exportar_pdf(21, 'Riesgo Lesional'),
-                html.Div(id='v21-output', style={"marginTop": "28px"})
+                    html.Div(id='v21-output', style={"marginTop": "28px"})
         ]
     ),
 
@@ -11848,7 +11848,7 @@ def render_dashboard(gps_data, pos_data, part_data):
         type="circle",
         color="#3B82F6",
         children=[boton_exportar_pdf(22, 'ML Híbrido Extendido'),
-                html.Div(id='v22-output', style={"marginTop": "28px"})]
+                    html.Div(id='v22-output', style={"marginTop": "28px"})]
     ),
 
     # INFO BOX 1: RANGO ÓPTIMO DE DÍAS
@@ -21518,9 +21518,8 @@ def descargar_informe_v23(n_clicks, gpsdata, atleta, variable, va, vc):
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# CLIENTSIDE CALLBACKS: Exportar a PDF cada una de las 23 visualizaciones
-# Tecnología: html2canvas (captura DOM) + jsPDF (genera PDF)
-# Los scripts se cargan vía external_scripts en el init de Dash.
+# CLIENTSIDE CALLBACKS — Exportar PDF (VIZ 1-23)
+# Tecnología: html2canvas + jsPDF (CDN cargados vía external_scripts)
 # ═══════════════════════════════════════════════════════════════════════════
 
 
@@ -21543,19 +21542,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ01_Evolucion_GPS_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -21570,7 +21567,7 @@ try:
         console.error('Error PDF VIZ 1:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Evolución Temporal GPS';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -21581,7 +21578,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 1 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 1: {_e}')
 
 
 try:
@@ -21603,20 +21600,18 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
-        pdf.save('VIZ02_Comparativa_Agrupacion_GPS2025.pdf');
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
+        pdf.save('VIZ02_Comparativa_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
@@ -21630,7 +21625,7 @@ try:
         console.error('Error PDF VIZ 2:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Comparativa por Agrupación';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -21641,7 +21636,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 2 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 2: {_e}')
 
 
 try:
@@ -21663,19 +21658,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ03_ACR_Temporal_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -21690,7 +21683,7 @@ try:
         console.error('Error PDF VIZ 3:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Análisis ACR Temporal';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -21701,7 +21694,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 3 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 3: {_e}')
 
 
 try:
@@ -21723,19 +21716,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ04_Carga_Aguda_Cronica_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -21750,7 +21741,7 @@ try:
         console.error('Error PDF VIZ 4:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Carga Aguda vs Crónica';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -21761,7 +21752,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 4 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 4: {_e}')
 
 
 try:
@@ -21783,19 +21774,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ05_Panel_Fatiga_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -21810,7 +21799,7 @@ try:
         console.error('Error PDF VIZ 5:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Panel de Fatiga';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -21821,7 +21810,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 5 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 5: {_e}')
 
 
 try:
@@ -21843,19 +21832,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ06_Distribucion_Posicion_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -21870,7 +21857,7 @@ try:
         console.error('Error PDF VIZ 6:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Distribución por Posición';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -21881,7 +21868,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 6 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 6: {_e}')
 
 
 try:
@@ -21903,19 +21890,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ07_Control_Velocidad_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -21930,7 +21915,7 @@ try:
         console.error('Error PDF VIZ 7:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Control Velocidad Máxima';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -21941,7 +21926,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 7 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 7: {_e}')
 
 
 try:
@@ -21963,19 +21948,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ08_Semana_vs_MA4_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -21990,7 +21973,7 @@ try:
         console.error('Error PDF VIZ 8:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Semana Actual vs MA-4';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -22001,7 +21984,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 8 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 8: {_e}')
 
 
 try:
@@ -22023,19 +22006,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ09_Reporte_Sesion_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -22050,7 +22031,7 @@ try:
         console.error('Error PDF VIZ 9:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Reporte Sesión Única';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -22061,7 +22042,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 9 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 9: {_e}')
 
 
 try:
@@ -22083,19 +22064,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ10_Gauge_Control_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -22110,7 +22089,7 @@ try:
         console.error('Error PDF VIZ 10:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Gauge Control-Partidos';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -22121,7 +22100,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 10 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 10: {_e}')
 
 
 try:
@@ -22143,19 +22122,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ11_FWF_ACR_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -22170,7 +22147,7 @@ try:
         console.error('Error PDF VIZ 11:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — FWF - ACR Individual';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -22181,7 +22158,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 11 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 11: {_e}')
 
 
 try:
@@ -22203,19 +22180,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ12_Heatmap_FWF_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -22230,7 +22205,7 @@ try:
         console.error('Error PDF VIZ 12:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Heatmap FWF';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -22241,7 +22216,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 12 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 12: {_e}')
 
 
 try:
@@ -22263,19 +22238,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ13_Tabla_FWF_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -22290,7 +22263,7 @@ try:
         console.error('Error PDF VIZ 13:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Tabla FWF Semanal';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -22301,7 +22274,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 13 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 13: {_e}')
 
 
 try:
@@ -22323,19 +22296,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ14_Monotonia_Strain_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -22350,7 +22321,7 @@ try:
         console.error('Error PDF VIZ 14:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Monotonía y Strain';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -22361,7 +22332,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 14 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 14: {_e}')
 
 
 try:
@@ -22383,19 +22354,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ15_Coherencia_Carga_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -22410,7 +22379,7 @@ try:
         console.error('Error PDF VIZ 15:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Coherencia Carga-Partido';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -22421,7 +22390,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 15 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 15: {_e}')
 
 
 try:
@@ -22443,19 +22412,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ16_ICI_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -22470,7 +22437,7 @@ try:
         console.error('Error PDF VIZ 16:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — ICI - Índice Compuesto';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -22481,7 +22448,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 16 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 16: {_e}')
 
 
 try:
@@ -22503,19 +22470,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ17_MPE_Work_Recovery_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -22530,7 +22495,7 @@ try:
         console.error('Error PDF VIZ 17:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — MPE Work-Recovery';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -22541,7 +22506,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 17 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 17: {_e}')
 
 
 try:
@@ -22563,19 +22528,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ18_Posicional_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -22590,7 +22553,7 @@ try:
         console.error('Error PDF VIZ 18:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Análisis Posicional';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -22601,7 +22564,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 18 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 18: {_e}')
 
 
 try:
@@ -22623,19 +22586,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ19_Coherencia_Entrenamiento_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -22650,7 +22611,7 @@ try:
         console.error('Error PDF VIZ 19:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Coherencia Entrenamiento-Competición';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -22661,7 +22622,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 19 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 19: {_e}')
 
 
 try:
@@ -22683,20 +22644,18 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
-        pdf.save('VIZ20_KDE_Distribucion_GPS2025.pdf');
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
+        pdf.save('VIZ20_KDE_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px"></i>✓ PDF Descargado';
@@ -22710,7 +22669,7 @@ try:
         console.error('Error PDF VIZ 20:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — KDE Distribución de Carga';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -22721,7 +22680,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 20 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 20: {_e}')
 
 
 try:
@@ -22743,19 +22702,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ21_Riesgo_Lesional_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -22770,7 +22727,7 @@ try:
         console.error('Error PDF VIZ 21:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Riesgo Lesional';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -22781,7 +22738,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 21 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 21: {_e}')
 
 
 try:
@@ -22803,19 +22760,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ22_ML_Hibrido_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -22830,7 +22785,7 @@ try:
         console.error('Error PDF VIZ 22:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — ML Híbrido Extendido';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -22841,7 +22796,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 22 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 22: {_e}')
 
 
 try:
@@ -22863,19 +22818,17 @@ try:
     }).then(function(canvas) {
         var jsPDF = window.jspdf.jsPDF;
         var imgData = canvas.toDataURL('image/png');
-        var isLandscape = canvas.width > canvas.height;
         var pdf = new jsPDF({
-            orientation: isLandscape ? 'landscape' : 'portrait',
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
             unit: 'mm', format: 'a4'
         });
         var pw = pdf.internal.pageSize.getWidth();
         var ph = pdf.internal.pageSize.getHeight() - 20;
         var cw = canvas.width * 0.264583;
         var ch = canvas.height * 0.264583;
-        var ratio = Math.min(pw / cw, ph / ch);
-        var iw = cw * ratio; var ih = ch * ratio;
-        var x = (pw - iw) / 2; var y = 10;
-        pdf.addImage(imgData, 'PNG', x, y, iw, ih);
+        var r = Math.min(pw / cw, ph / ch);
+        var iw = cw * r; var ih = ch * r;
+        pdf.addImage(imgData, 'PNG', (pw - iw) / 2, 10, iw, ih);
         pdf.save('VIZ23_Informe_FWF_GPS2025.pdf');
         if (btn) {
             btn.disabled = false;
@@ -22890,7 +22843,7 @@ try:
         console.error('Error PDF VIZ 23:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>Error - Reintentar';
+            btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:7px"></i>⬇  Exportar PDF — Informe FWF Individual';
             btn.style.backgroundColor = '#DC2626';
         }
     });
@@ -22901,7 +22854,7 @@ try:
         prevent_initial_call=True
     )
 except Exception as _e:
-    logger.warning(f'PDF callback VIZ 23 no configurado: {_e}')
+    logger.warning(f'PDF callback VIZ 23: {_e}')
 
 
 if __name__ == '__main__':
