@@ -4,43 +4,6 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
-
-# ============================================================================
-# BOTÓN EXPORTAR PDF POR VISUALIZACIÓN
-# ============================================================================
-
-from dash import html
-
-
-def boton_exportar_pdf(viz_num: int):
-    """Crea un botón flotante 'exportar pdf' para una VIZ concreta."""
-    return html.Button(
-        [
-            html.I(className="fas fa-file-pdf", style={"marginRight": "6px"}),
-            "exportar pdf",
-        ],
-        id=f"btn-export-pdf-v{viz_num}",
-        n_clicks=0,
-        style={
-            "position": "absolute",
-            "top": "10px",
-            "right": "12px",
-            "zIndex": 20,
-            "backgroundColor": "#DC2626",
-            "color": "white",
-            "border": "none",
-            "borderRadius": "6px",
-            "padding": "6px 12px",
-            "fontSize": "11px",
-            "fontWeight": "600",
-            "cursor": "pointer",
-            "boxShadow": "0 2px 6px rgba(0,0,0,0.25)",
-        },
-        title="Exportar PDF de esta visualización",
-    )
-
-
 # ============================================================================
 # 🥈 MEJORA TOP 2 - LAZY LOADING IMPLEMENTADO (31 ENERO 2026)
 # ============================================================================
