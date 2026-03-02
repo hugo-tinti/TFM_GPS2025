@@ -9200,6 +9200,8 @@ app.layout = html.Div(id='main-container', style={'backgroundColor': '#FFFFFF', 
         ), style={'position': 'relative'}
     ),
     html.Div(id='_pdf-dummy-output', style={'display': 'none'}),
+                html.Div(id='_pdf-viz-inject-dummy', style={'display': 'none'}),
+                dcc.Interval(id='_pdf-viz-inject-interval', interval=4000, max_intervals=1, disabled=False),
 
     dcc.Store(id='store-gps'),
     dcc.Store(id='store-pos'),
@@ -21467,6 +21469,79 @@ def descargar_informe_v23(n_clicks, gpsdata, atleta, variable, va, vc):
     except Exception as e:
         logger.error(f"Error informe: {e}"); return dash.no_update
 
+
+
+# BOTON PDF INDIVIDUAL POR VIZ (inyeccion JS al cargar pagina)
+app.clientside_callback(
+    """
+    function(n) {
+        if (!n) { return ''; }
+        function cargar(url, cb) {
+            if (document.querySelector('script[src="' + url + '"]')) { cb(); return; }
+            var s = document.createElement('script');
+            s.src = url; s.onload = cb;
+            s.onerror = function() { console.warn('No se cargo: ' + url); };
+            document.head.appendChild(s);
+        }
+        function inyectar() {
+            var secs = document.querySelectorAll('.viz-section');
+            secs.forEach(function(sec, num) {
+                if (sec.querySelector('.btn-pdf-viz')) { return; }
+                var header = sec.querySelector('.viz-header');
+                if (!header) { return; }
+                header.style.position = 'relative';
+                var btn = document.createElement('button');
+                btn.innerHTML = '&#128196; PDF';
+                btn.className = 'btn-pdf-viz';
+                btn.title = 'Exportar esta VIZ como PDF';
+                btn.style.cssText = 'position:absolute;top:8px;right:8px;z-index:200;background:#DC2626;color:white;border:none;border-radius:8px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;box-shadow:0 2px 6px rgba(220,38,38,0.35);';
+                header.appendChild(btn);
+                btn.addEventListener('click', function() {
+                    btn.innerHTML = '&#9203; ...';
+                    btn.disabled = true;
+                    sec.scrollIntoView({ behavior: 'instant', block: 'start' });
+                    var modbars = sec.querySelectorAll('.modebar, .btn-update');
+                    modbars.forEach(function(b) { b.style.visibility = 'hidden'; });
+                    setTimeout(function() {
+                        html2canvas(sec, { scale: 0.85, backgroundColor: '#ffffff', logging: false, useCORS: true })
+                        .then(function(canvas) {
+                            modbars.forEach(function(b) { b.style.visibility = ''; });
+                            var PDF  = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
+                            var pdf  = new PDF('landscape', 'mm', 'a4');
+                            var pw   = pdf.internal.pageSize.getWidth();
+                            var ph   = pdf.internal.pageSize.getHeight();
+                            var tEl  = sec.querySelector('.viz-title');
+                            var titl = tEl ? tEl.innerText.substring(0, 70) : ('VIZ ' + (num + 1));
+                            pdf.setFontSize(9); pdf.setTextColor(0, 31, 84); pdf.text(titl, 10, 7);
+                            var img   = canvas.toDataURL('image/jpeg', 0.70);
+                            var m = 10; var iw = pw - m * 2; var ih = ph - 15;
+                            var ratio = canvas.width / canvas.height;
+                            if (ratio > iw / ih) { ih = iw / ratio; } else { iw = ih * ratio; }
+                            pdf.addImage(img, 'JPEG', m, 12, iw, ih);
+                            var fecha = new Date().toISOString().slice(0, 10);
+                            var nom   = titl.replace(/[^a-z0-9]/gi, '_').substring(0, 25);
+                            pdf.save('VIZ' + (num + 1) + '_' + nom + '_' + fecha + '.pdf');
+                            btn.innerHTML = '&#128196; PDF'; btn.disabled = false;
+                        }).catch(function(e) {
+                            modbars.forEach(function(b) { b.style.visibility = ''; });
+                            console.error('Error VIZ ' + (num + 1), e);
+                            btn.innerHTML = '&#128196; PDF'; btn.disabled = false;
+                        });
+                    }, 300);
+                });
+            });
+        }
+        var J = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        var H = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        cargar(J, function() { cargar(H, inyectar); });
+        return '';
+    }
+    """,
+    Output('_pdf-viz-inject-dummy', 'children'),
+    Input('_pdf-viz-inject-interval', 'n_intervals'),
+    prevent_initial_call=False
+)
+
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=8050)
 
@@ -21865,7 +21940,8 @@ app.clientside_callback(
         function cargar(url, cb) {
             if (document.querySelector('script[src="' + url + '"]')) { cb(); return; }
             var s = document.createElement('script');
-            s.src = url; s.onload = cb;
+            s.src = url;
+            s.onload = cb;
             s.onerror = function() { alert('No se pudo cargar: ' + url); };
             document.head.appendChild(s);
         }
@@ -21873,24 +21949,21 @@ app.clientside_callback(
         function exportar() {
             var PDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
             if (!PDF) { alert('jsPDF no disponible'); return; }
-
-            var pdf  = new PDF('landscape', 'mm', 'a4');
-            var pw   = pdf.internal.pageSize.getWidth();
-            var ph   = pdf.internal.pageSize.getHeight();
-            var idx  = 0;
+            var pdf = new PDF('landscape', 'mm', 'a4');
+            var pw  = pdf.internal.pageSize.getWidth();
+            var ph  = pdf.internal.pageSize.getHeight();
+            var idx = 0;
 
             function siguiente() {
                 if (idx >= secs.length) {
-                    var d = new Date().toISOString().slice(0,10);
+                    var d = new Date().toISOString().slice(0, 10);
                     pdf.save('TFM_GPS_' + d + '.pdf');
                     return;
                 }
-
                 var sec  = secs[idx];
-                var btns = sec.querySelectorAll('.modebar, .btn-update');
+                var btns = sec.querySelectorAll('.modebar, .btn-update, .btn-pdf-viz');
                 btns.forEach(function(b) { b.style.display = 'none'; });
                 sec.scrollIntoView({ behavior: 'instant', block: 'start' });
-
                 setTimeout(function() {
                     html2canvas(sec, {
                         scale: 0.75,
@@ -21899,51 +21972,34 @@ app.clientside_callback(
                         useCORS: true
                     }).then(function(canvas) {
                         btns.forEach(function(b) { b.style.display = ''; });
-
                         if (idx > 0) { pdf.addPage('a4', 'landscape'); }
-
                         var t = sec.querySelector('.viz-title');
-                        if (t) {
-                            pdf.setFontSize(9);
-                            pdf.setTextColor(0, 31, 84);
-                            pdf.text(t.innerText.substring(0, 70), 10, 7);
-                        }
-
-                        var img    = canvas.toDataURL('image/jpeg', 0.55);
-                        var m      = 10;
-                        var iw     = pw - m * 2;
-                        var ih     = ph - 15;
-                        var ratio  = canvas.width / canvas.height;
-                        if (ratio > iw / ih) { ih = iw / ratio; }
-                        else { iw = ih * ratio; }
-
+                        if (t) { pdf.setFontSize(9); pdf.setTextColor(0,31,84); pdf.text(t.innerText.substring(0,70), 10, 7); }
+                        var img   = canvas.toDataURL('image/jpeg', 0.55);
+                        var m     = 10;
+                        var iw    = pw - m * 2;
+                        var ih    = ph - 15;
+                        var ratio = canvas.width / canvas.height;
+                        if (ratio > iw / ih) { ih = iw / ratio; } else { iw = ih * ratio; }
                         pdf.addImage(img, 'JPEG', m, 12, iw, ih);
                         idx++;
                         setTimeout(siguiente, 150);
-
                     }).catch(function(e) {
                         btns.forEach(function(b) { b.style.display = ''; });
-                        console.error('Error en seccion ' + idx, e);
+                        console.error('Error seccion ' + idx, e);
                         idx++;
                         setTimeout(siguiente, 150);
                     });
                 }, 250);
             }
-
             siguiente();
         }
 
-        var H = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
         var J = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-
-        if (!window.jspdf && !window.jsPDF) {
-            cargar(J, function() { cargar(H, exportar); });
-        } else if (!window.html2canvas) {
-            cargar(H, exportar);
-        } else {
-            exportar();
-        }
-
+        var H = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        if (!window.jspdf && !window.jsPDF) { cargar(J, function() { cargar(H, exportar); }); }
+        else if (!window.html2canvas)        { cargar(H, exportar); }
+        else                                  { exportar(); }
         return '';
     }
     """,
@@ -21956,6 +22012,9 @@ app.clientside_callback(
 # ==============================================================================
 # FIN DEL SISTEMA DASH PATCH
 # ==============================================================================
+
+
+
 
 
 
