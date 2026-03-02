@@ -421,9 +421,10 @@ def crear_tabla_fwf_mejorada(df_fwf: pd.DataFrame, variable: str) -> dash_table.
         df_m['Strain_Foster'] = df_m['Strain_Foster'].round(0).astype(int)
     df_m.columns = [cols_disp[c] for c in df_m.columns]
     return dash_table.DataTable(
+            page_action='none',
         data=df_m.to_dict('records'),
         columns=[{'name':c,'id':c} for c in df_m.columns],
-        style_table={'overflowX':'auto','border':'2px solid #E5E7EB','borderRadius':'8px'},
+        style_table={'overflowX':'auto','maxHeight':'none','border':'2px solid #E5E7EB','borderRadius':'8px'},
         style_cell={'textAlign':'center','padding':'10px','fontSize':11},
         style_header={'backgroundColor':'#111827','color':'white','fontWeight':900,'fontSize':12},
         style_data_conditional=[
@@ -2438,6 +2439,7 @@ def crear_tabla_mahalanobis(df_dia):
         ])
 
     tabla = dash_table.DataTable(
+            page_action='none',
         data=df_tabla.to_dict('records'),
         columns=columnas_dt,
         style_table={'marginTop': '20px', 'borderRadius': '12px', 'overflowX': 'auto'},
@@ -6070,9 +6072,10 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
 
             # Tabla resumen
             tabla_resumen = dash_table.DataTable(
+            page_action='none',
                 data=resumen.reset_index().to_dict('records'),
                 columns=[{'name': i, 'id': i} for i in resumen.reset_index().columns],
-                style_table={'overflowX': 'auto'},
+                style_table={'overflowX': 'auto', 'maxHeight': 'none'},
                 style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '14px', 'fontWeight': '600'},
                 style_header={'backgroundColor': '#001F54', 'color': 'white', 'fontWeight': 'bold', 'fontSize': '15px'}
             )
@@ -6106,6 +6109,7 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
                 df_riesgo['Fecha'] = pd.to_datetime(df_riesgo['Fecha']).dt.strftime('%d/%m/%Y')
 
                 tabla_riesgo = dash_table.DataTable(
+            page_action='none',
                     data=df_riesgo.to_dict('records'),
                     columns=[
                         {'name': 'Atleta', 'id': 'Atleta'},
@@ -6115,7 +6119,7 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
                         {'name': 'Nivel', 'id': 'nivel_riesgo'},
                         {'name': 'Driver', 'id': 'driver_principal'}
                     ],
-                    style_table={'overflowX': 'auto'},
+                    style_table={'overflowX': 'auto', 'maxHeight': 'none'},
                     style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '14px', 'fontWeight': '600'},
                     style_header={'backgroundColor': '#DC2626', 'color': 'white', 'fontWeight': 'bold'},
                     style_data_conditional=[{
@@ -6162,9 +6166,10 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
             df_anom_tabla['anomaly_score'] = df_anom_tabla['anomaly_score'].round(3)
 
             tabla_anomalias = dash_table.DataTable(
+            page_action='none',
                 data=df_anom_tabla.to_dict('records'),
                 columns=[{'name': i, 'id': i} for i in df_anom_tabla.columns],
-                style_table={'overflowX': 'auto'},
+                style_table={'overflowX': 'auto', 'maxHeight': 'none'},
                 style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '14px', 'fontWeight': '600'},
                 style_header={'backgroundColor': '#7C3AED', 'color': 'white', 'fontWeight': 'bold'},
                 style_data={'backgroundColor': '#f3e8ff'}
@@ -7109,9 +7114,10 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
 
             # Tabla resumen
             tabla_resumen = dash_table.DataTable(
+            page_action='none',
                 data=resumen.reset_index().to_dict('records'),
                 columns=[{'name': i, 'id': i} for i in resumen.reset_index().columns],
-                style_table={'overflowX': 'auto'},
+                style_table={'overflowX': 'auto', 'maxHeight': 'none'},
                 style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '14px', 'fontWeight': '600'},
                 style_header={'backgroundColor': '#001F54', 'color': 'white', 'fontWeight': 'bold', 'fontSize': '15px'}
             )
@@ -7145,13 +7151,14 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
                 df_riesgo['Fecha'] = pd.to_datetime(df_riesgo['Fecha']).dt.strftime('%d/%m/%Y')
 
                 tabla_riesgo = dash_table.DataTable(
+            page_action='none',
                     data=df_riesgo.to_dict('records'),
                     columns=[{'name': 'Atleta', 'id': 'Atleta'},
                             {'name': 'Fecha', 'id': 'Fecha'},
                             {'name': 'ICI', 'id': 'ICI'},
                             {'name': 'Prob. Riesgo', 'id': 'prob_riesgo'},
                             {'name': 'Nivel', 'id': 'nivel_riesgo'}],
-                    style_table={'overflowX': 'auto'},
+                    style_table={'overflowX': 'auto', 'maxHeight': 'none'},
                     style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '14px', 'fontWeight': '600'},
                     style_header={'backgroundColor': '#DC2626', 'color': 'white', 'fontWeight': 'bold'},
                     style_data_conditional=[
@@ -7197,9 +7204,10 @@ def update_v21(n, gps_data, pos_data, partidos_data, tipo_analisis, fecha_inicio
             df_anom_tabla['anomaly_score'] = df_anom_tabla['anomaly_score'].round(3)
 
             tabla_anomalias = dash_table.DataTable(
+            page_action='none',
                 data=df_anom_tabla.to_dict('records'),
                 columns=[{'name': i, 'id': i} for i in df_anom_tabla.columns],
-                style_table={'overflowX': 'auto'},
+                style_table={'overflowX': 'auto', 'maxHeight': 'none'},
                 style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '14px', 'fontWeight': '600'},
                 style_header={'backgroundColor': '#7C3AED', 'color': 'white', 'fontWeight': 'bold'},
                 style_data={'backgroundColor': '#f3e8ff'}
@@ -12145,6 +12153,7 @@ def crear_tabla_alertas_extendidas_v22(resultados_ext, df_final):
         alertas[atleta]['Total'] = sum([alertas[atleta][k] for k in ['Cambios', 'Monotonía', 'Fatiga', 'EWMA', 'Vmax', 'Partidos', 'MA4']])
     df_alertas = pd.DataFrame(list(alertas.values())).sort_values('Total', ascending=False).head(20)
     tabla = dash_table.DataTable(
+            page_action='none',
         data=df_alertas.to_dict('records'),
         columns=[
             {'name': 'Atleta', 'id': 'Atleta'}, {'name': 'Posición', 'id': 'Posición'},
@@ -12153,7 +12162,7 @@ def crear_tabla_alertas_extendidas_v22(resultados_ext, df_final):
             {'name': 'Vmax', 'id': 'Vmax'}, {'name': 'Partidos', 'id': 'Partidos'},
             {'name': 'MA4', 'id': 'MA4'}, {'name': '🚨 TOTAL', 'id': 'Total'}
         ],
-        style_table={'overflowX': 'auto'},
+        style_table={'overflowX': 'auto', 'maxHeight': 'none'},
         style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '13px'},
         style_header={'backgroundColor': '#10B981', 'color': 'white', 'fontWeight': 'bold'},
         style_data_conditional=[
@@ -12679,7 +12688,8 @@ def crear_vista_jugador_individual_v22(df_final, df_alertas_ext, atleta_seleccio
     alertas_jugador = df_alertas_ext[df_alertas_ext['Atleta'] == atleta_seleccionado]
     if len(alertas_jugador) > 0:
         total_alertas = alertas_jugador['Cantidad'].sum()
-        tabla_alertas_jugador = dash_table.DataTable(data=alertas_jugador.to_dict('records'), columns=[{'name': c, 'id': c} for c in alertas_jugador.columns], style_table={'overflowX': 'auto'}, style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '13px'}, style_header={'backgroundColor': '#7C3AED', 'color': 'white', 'fontWeight': 'bold'}, page_size=10)
+        tabla_alertas_jugador = dash_table.DataTable(
+            page_action='none',data=alertas_jugador.to_dict('records'), columns=[{'name': c, 'id': c} for c in alertas_jugador.columns], style_table={'overflowX': 'auto', 'maxHeight': 'none'}, style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '13px'}, style_header={'backgroundColor': '#7C3AED', 'color': 'white', 'fontWeight': 'bold'}, page_size=10)
         explicacion_individual = html.Div([
             html.P([
                 html.Strong(f"Total de alertas: {total_alertas}"), 
@@ -12782,6 +12792,7 @@ def update_v22(n, gps_data, pos_data, fecha_inicio, fecha_fin, posicion, umbral)
                 df_tabla_ml[col] = 'N/A'
 
         tabla_ml = dash_table.DataTable(
+            page_action='none',
             data=df_tabla_ml[cols_ml].to_dict('records'),
             columns=[
                 {'name': 'Atleta', 'id': 'Atleta'}, 
@@ -12791,7 +12802,7 @@ def update_v22(n, gps_data, pos_data, fecha_inicio, fecha_fin, posicion, umbral)
                 {'name': 'Riesgo', 'id': 'riesgo_lesion'}, 
                 {'name': 'Prob %', 'id': 'prob_riesgo_lesion'}
             ],
-            style_table={'overflowX': 'auto'},
+            style_table={'overflowX': 'auto', 'maxHeight': 'none'},
             style_cell={'textAlign': 'center', 'padding': '12px', 'fontSize': '14px'},
             style_header={'backgroundColor': '#7C3AED', 'color': 'white', 'fontWeight': 'bold'},
             style_data_conditional=[
@@ -13529,6 +13540,7 @@ def update_v2(n, data, pos_data, atleta, metrica, agrupar, turno, puesto):
                 style={'textAlign': 'center', 'color': '#001F54', 'marginTop': '30px', 
                        'marginBottom': '15px', 'fontWeight': 'bold'}),
         dash_table.DataTable(
+            page_action='none',
             data=stats_data,
             columns=[
                 {"name": "Grupo", "id": "Grupo"},
@@ -13889,9 +13901,10 @@ def updatev3(n, data, variable, desde, hasta, agregacion):
     tabla_df = pd.DataFrame(tabla_data)
 
     tabla = dash_table.DataTable(
+            page_action='none',
         data=tabla_df.to_dict('records'),
         columns=[{'name': col, 'id': col} for col in tabla_df.columns],
-        style_table={'overflowX': 'auto', 'marginTop': '24px'},
+        style_table={'overflowX': 'auto', 'maxHeight': 'none', 'marginTop': '24px'},
         style_cell={
             'textAlign': 'left',
             'padding': '12px',
@@ -14103,6 +14116,7 @@ def update_v4(n, data, variables, microciclo, turno):
                 f" TABLA 1: SUMA SEMANAL - {variable}"
             ], className="table-title"),
             dash_table.DataTable(
+            page_action='none',
                 data=df_suma_dict,
                 columns=cols_suma,
                 style_table={'width': '100%', 'maxWidth': '100%', 'overflowX': 'auto'},
@@ -14176,6 +14190,7 @@ def update_v4(n, data, variables, microciclo, turno):
         tabla2 = html.Div([
             html.Div([html.I(className="fas fa-calculator"), f" TABLA 2: DIFERENCIA ABSOLUTA - {variable}"], className="table-title"),
             dash_table.DataTable(
+            page_action='none',
                 data=data_diff,
                 columns=cols_suma,
                 style_table={'width': '100%', 'maxWidth': '100%', 'overflowX': 'auto'},
@@ -14238,6 +14253,7 @@ def update_v4(n, data, variables, microciclo, turno):
         tabla3 = html.Div([
             html.Div([html.I(className="fas fa-percent"), f" TABLA 3: DIFERENCIA PORCENTUAL - {variable}"], className="table-title"),
             dash_table.DataTable(
+            page_action='none',
                 data=data_pct,
                 columns=cols_suma,
                 style_table={'width': '100%', 'maxWidth': '100%', 'overflowX': 'auto'},
@@ -14305,6 +14321,7 @@ def update_v4(n, data, variables, microciclo, turno):
         tabla4 = html.Div([
             html.Div([html.I(className="fas fa-wave-square"), f" TABLA 4: MONOTONÍA - {variable}"], className="table-title"),
             dash_table.DataTable(
+            page_action='none',
                 data=data_mono,
                 columns=cols_suma,
                 style_table={'width': '100%', 'maxWidth': '100%', 'overflowX': 'auto'},
@@ -14374,6 +14391,7 @@ def update_v4(n, data, variables, microciclo, turno):
         tabla5 = html.Div([
             html.Div([html.I(className="fas fa-exclamation-triangle"), f" TABLA 5: FATIGA/STRAIN - {variable}"], className="table-title"),
             dash_table.DataTable(
+            page_action='none',
                 data=data_fatiga,
                 columns=cols_suma,
                 style_table={'width': '100%', 'maxWidth': '100%', 'overflowX': 'auto'},
@@ -14954,13 +14972,14 @@ def update_v6(n, data, atleta, metrica, fecha_desde, fecha_hasta):
     if len(df_riesgo) > 0:
         df_riesgo['Fecha_str'] = df_riesgo['Fecha'].dt.strftime('%d/%m/%Y')
         tabla_riesgo = dash_table.DataTable(
+            page_action='none',
             data=df_riesgo[['Fecha_str', metrica, 'EWMA_Aguda', 'EWMA_Cronica', 'ACR_Ratio', 'Estado']].rename(
                 columns={'Fecha_str':'Fecha', metrica:'Carga Diaria', 'EWMA_Aguda':'EWMA Aguda (7d)', 
                         'EWMA_Cronica':'EWMA Crónica (28d)', 'ACR_Ratio':'ACR Ratio'}).to_dict('records'),
             columns=[{'name':'Fecha','id':'Fecha'},{'name':'Carga Diaria','id':'Carga Diaria'},
                     {'name':'EWMA Aguda (7d)','id':'EWMA Aguda (7d)'},{'name':'EWMA Crónica (28d)','id':'EWMA Crónica (28d)'},
                     {'name':'ACR Ratio','id':'ACR Ratio'},{'name':'Estado','id':'Estado'}],
-            style_table={'overflowX':'auto'},
+            style_table={'overflowX':'auto', 'maxHeight':'none'},
             style_cell={'textAlign':'center','padding':'14px 12px','fontSize':'14px','fontWeight':'600',
                        'color':'#001F54','fontFamily':'Inter, sans-serif'},
             style_header={'backgroundColor':'#001F54','color':'white','fontWeight':'800','fontSize':'13px',
@@ -15095,7 +15114,8 @@ def update_v7(n, data, fecha_desde, fecha_hasta, umbral):
                 'fontWeight': '700'
             })
 
-    tabla = dash_table.DataTable(data=tabla_data, columns=columnas, style_table={'overflowX':'auto','minWidth':'100%'},
+    tabla = dash_table.DataTable(
+            page_action='none',data=tabla_data, columns=columnas, style_table={'overflowX':'auto','minWidth':'100%'},
                                  style_cell={'textAlign':'center','padding':'14px 8px','fontSize':'14px','fontWeight':'600',
                                             'color':'#001F54','fontFamily':'Inter, sans-serif','minWidth':'80px','maxWidth':'120px','whiteSpace':'normal'},
                                  style_header={'backgroundColor':'#001F54','color':'white','fontWeight':'800','fontSize':'12px',
@@ -15637,9 +15657,10 @@ def v9_generate_report(n, gps_data, pos_data, fecha_inicio, fecha_fin, v1, v2, v
 
     # Crear la tabla
     tabla_md = dash_table.DataTable(
+            page_action='none',
         data=tabla_data,
         columns=columnas_dt,
-        style_table={'overflowX': 'auto', 'minWidth': '100%'},
+        style_table={'overflowX': 'auto', 'maxHeight': 'none', 'minWidth': '100%'},
         style_cell={
             'textAlign': 'center',
             'padding': '14px 8px',
@@ -16345,6 +16366,7 @@ def update_v12(n, gps_data, partidos_data, fecha_inicio, fecha_fin, turno):
                 " % SEMANAL vs CONTROL PARTIDOS"
             ], className='table-title'),
             dash_table.DataTable(
+            page_action='none',
                 data=tabla_data,
                 columns=columnas,
                 style_table={'width': '100%', 'maxWidth': '100%', 'overflowX': 'auto'},
@@ -18215,6 +18237,7 @@ def generar_analisis_coherencia(df_coherencia, umbral, posicion, atleta, titulo_
 
     # Crear tabla
     tabla = dash_table.DataTable(
+            page_action='none',
         data=tabla_data,
         columns=[
             {'name': 'Variable', 'id': 'Variable'},
@@ -18225,7 +18248,7 @@ def generar_analisis_coherencia(df_coherencia, umbral, posicion, atleta, titulo_
             {'name': 'Coherencia %', 'id': 'Coherencia %'},
             {'name': 'Estado', 'id': 'Estado'}
         ],
-        style_table={'overflowX': 'auto', 'minWidth': '100%'},
+        style_table={'overflowX': 'auto', 'maxHeight': 'none', 'minWidth': '100%'},
         style_cell={
             'textAlign': 'center',
             'padding': '14px 12px',
@@ -20487,6 +20510,7 @@ def update_v23_fwf(n, gps_data, atleta, variable, fi, ff, va, vc):
                 df_mostrar[col] = df_mostrar[col].round(2)
 
         tabla = dash_table.DataTable(
+            page_action='none',
             data=df_mostrar.to_dict("records"),
             columns=[{"name": i, "id": i} for i in df_mostrar.columns],
             style_table={"overflowX": "auto"},
@@ -21824,6 +21848,7 @@ app.clientside_callback(
     """
     function(n_clicks) {
         if (!n_clicks || n_clicks === 0) return '';
+
         function sectionTieneContenido(sec) {
             var graph = sec.querySelector('.js-plotly-plot');
             if (graph && graph.data && graph.data.length > 0) {
@@ -21840,12 +21865,14 @@ app.clientside_callback(
             if (filas && filas.length > 1) return true;
             return false;
         }
+
         var todasSecs = document.querySelectorAll('.viz-section');
         var secsValidas = Array.from(todasSecs).filter(sectionTieneContenido);
         if (secsValidas.length === 0) {
-            alert('No hay secciones con datos. Cargá los datos y navegá a la VIZ primero.');
+            alert('No hay secciones con datos. Carg\u00e1 los datos y naveg\u00e1 a la VIZ primero.');
             return '';
         }
+
         function generarPDF() {
             var jsPDF = window.jspdf ? window.jspdf.jsPDF : (window.jsPDF || null);
             if (!jsPDF) { alert('Error: jsPDF no disponible.'); return; }
@@ -21854,19 +21881,52 @@ app.clientside_callback(
             var pageW = pdf.internal.pageSize.getWidth();
             var pageH = pdf.internal.pageSize.getHeight();
             var idx = 0;
+
             function capturarSiguiente() {
                 if (idx >= secsValidas.length) { pdf.save('TFM_GPS_' + fecha + '.pdf'); return; }
                 var sec = secsValidas[idx];
                 var filtros = sec.querySelectorAll('.btn-update, .filter-box button, .modebar');
                 filtros.forEach(function(el){ el.style.visibility='hidden'; });
-                html2canvas(sec, { scale: 1.5, useCORS: true, backgroundColor: '#ffffff', logging: false, allowTaint: true })
+
+                // Expandir contenedores de tablas para captura completa
+                var tablaContainers = sec.querySelectorAll(
+                    '.dash-table-container, .dash-spreadsheet-container, .dash-freeze-left'
+                );
+                var origTablaStyles = [];
+                tablaContainers.forEach(function(t) {
+                    origTablaStyles.push({ el: t, maxHeight: t.style.maxHeight,
+                                           overflow: t.style.overflow, height: t.style.height });
+                    t.style.maxHeight = 'none';
+                    t.style.overflow  = 'visible';
+                    t.style.height    = 'auto';
+                });
+
+                html2canvas(sec, {
+                    scale: 1.0,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    allowTaint: true,
+                    windowHeight: sec.scrollHeight + 200,
+                    height: sec.scrollHeight,
+                    y: sec.getBoundingClientRect().top + window.scrollY
+                })
                 .then(function(canvas) {
+                    // Restaurar estilos originales de tablas
+                    origTablaStyles.forEach(function(s) {
+                        s.el.style.maxHeight = s.maxHeight;
+                        s.el.style.overflow  = s.overflow;
+                        s.el.style.height    = s.height;
+                    });
                     filtros.forEach(function(el){ el.style.visibility=''; });
+
                     if (idx > 0) pdf.addPage('a4', 'landscape');
                     var titleEl = sec.querySelector('.viz-title');
                     var title = titleEl ? titleEl.innerText : '';
                     if (title) { pdf.setFontSize(10); pdf.setTextColor(0,31,84); pdf.text(title.substring(0,80), 10, 7); }
-                    var imgData = canvas.toDataURL('image/png');
+
+                    // JPEG 78% en lugar de PNG: reduce peso ~70% con calidad visual aceptable
+                    var imgData = canvas.toDataURL('image/jpeg', 0.78);
                     var imgY = title ? 10 : 5;
                     var margin = 8;
                     var imgW = pageW - margin*2;
@@ -21874,18 +21934,26 @@ app.clientside_callback(
                     var canvasRatio = canvas.width / canvas.height;
                     var pdfRatio = imgW / imgH;
                     if (canvasRatio < pdfRatio) { imgW = imgH * canvasRatio; } else { imgH = imgW / canvasRatio; }
-                    pdf.addImage(imgData, 'PNG', margin, imgY, imgW, imgH, '', 'FAST');
+                    pdf.addImage(imgData, 'JPEG', margin, imgY, imgW, imgH, '', 'FAST');
                     idx++;
-                    capturarSiguiente();
+                    // Pausa 300ms: evita congelar el navegador entre capturas
+                    setTimeout(capturarSiguiente, 300);
+
                 }).catch(function(e) {
+                    origTablaStyles.forEach(function(s) {
+                        s.el.style.maxHeight = s.maxHeight;
+                        s.el.style.overflow  = s.overflow;
+                        s.el.style.height    = s.height;
+                    });
                     filtros.forEach(function(el){ el.style.visibility=''; });
-                    console.error('Error sección ' + idx + ': ' + e);
+                    console.error('Error secci\u00f3n ' + idx + ': ' + e);
                     idx++;
-                    capturarSiguiente();
+                    setTimeout(capturarSiguiente, 300);
                 });
             }
             capturarSiguiente();
         }
+
         function cargarScript(url, cb) {
             var s = document.createElement('script'); s.src = url; s.onload = cb;
             s.onerror = function(){ alert('Error cargando: ' + url); };
